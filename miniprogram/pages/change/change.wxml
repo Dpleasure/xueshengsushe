@@ -1,0 +1,62 @@
+<view class="page">
+  <image class="page-bg" src="{{useLocalBg ? localFallback : bgUrl}}" mode="aspectFill" binderror="onBgError" />
+  <view class="page-bg-mask"></view>
+
+  <view class="content-layer">
+    <view class="page-hero">
+      <view class="kicker light">住宿调整</view>
+      <view class="page-title">换宿申请</view>
+      <view class="page-subtitle">确认当前住宿后，填写希望调整到的新宿舍和床位。</view>
+    </view>
+
+    <view class="section card">
+      <view class="card-title">当前住宿</view>
+      <block wx:if="{{accommodation}}">
+        <view class="info-row">
+          <view class="row-label">宿舍</view>
+          <view class="row-value">{{accommodationDisplay.dormitory}}</view>
+        </view>
+        <view class="info-row">
+          <view class="row-label">床位</view>
+          <view class="row-value">{{accommodationDisplay.bed}}</view>
+        </view>
+      </block>
+      <view wx:else class="empty-state">暂未查询到住宿信息，无法申请换宿</view>
+    </view>
+
+    <view class="section card">
+      <view class="card-title">提交申请</view>
+      <view class="field">
+        <view class="label">新宿舍</view>
+        <input class="input" placeholder-class="input-placeholder" placeholder="例如 B-305" value="{{form.newDormitory}}" data-field="newDormitory" bindinput="onInput" />
+      </view>
+      <view class="field">
+        <view class="label">新床位</view>
+        <input class="input" placeholder-class="input-placeholder" placeholder="例如 1号床" value="{{form.newBed}}" data-field="newBed" bindinput="onInput" />
+      </view>
+      <button class="primary-btn" disabled="{{!accommodation}}" loading="{{submitting}}" bindtap="submitChange">提交申请</button>
+    </view>
+
+    <view class="section">
+      <view class="section-heading">我的换宿记录</view>
+      <block wx:if="{{changes.length}}">
+        <view class="list-card" wx:for="{{changes}}" wx:key="id">
+          <view class="list-head">
+            <view class="item-title">{{item.displayRoute}}</view>
+            <view class="badge {{item.statusClass}}">{{item.statusText}}</view>
+          </view>
+          <view class="info-row compact-row">
+            <view class="row-label">原床位</view>
+            <view class="row-value">{{item.displayOldBed}}</view>
+          </view>
+          <view class="info-row compact-row">
+            <view class="row-label">新床位</view>
+            <view class="row-value">{{item.displayNewBed}}</view>
+          </view>
+          <view class="time">{{item.changeTimeText}}</view>
+        </view>
+      </block>
+      <view wx:else class="empty card">暂无换宿记录</view>
+    </view>
+  </view>
+</view>

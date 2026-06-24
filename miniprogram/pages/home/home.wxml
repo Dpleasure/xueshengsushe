@@ -1,0 +1,73 @@
+<view class="page">
+  <image class="page-bg" src="{{useLocalBg ? localFallback : bgUrl}}" mode="aspectFill" binderror="onBgError" />
+  <view class="page-bg-mask"></view>
+
+  <view class="content-layer">
+    <view class="hero-card">
+      <view class="hero-copy">
+        <view class="kicker light">学生工作台</view>
+        <view class="page-title">你好，{{displayName}}</view>
+        <view class="page-subtitle">学号：{{displayStudentId}}</view>
+      </view>
+      <view class="avatar-box">
+        <image wx:if="{{avatarUrl}}" class="hero-avatar-img" src="{{avatarUrl}}" mode="aspectFill" />
+        <view wx:else class="hero-avatar">{{avatarText}}</view>
+      </view>
+    </view>
+
+    <view class="section card">
+      <view class="card-header">
+        <view class="header-left">
+          <view class="kicker">住宿信息</view>
+          <view class="card-title">当前宿舍</view>
+        </view>
+      </view>
+      <block wx:if="{{accommodation}}">
+        <view class="living-grid">
+          <view class="living-item">
+            <text class="living-label">宿舍</text>
+            <text class="living-value">{{accommodationDisplay.dormitory}}</text>
+          </view>
+          <view class="living-item">
+            <text class="living-label">床位</text>
+            <text class="living-value">{{accommodationDisplay.bed}}</text>
+          </view>
+          <view class="living-item">
+            <text class="living-label">楼栋</text>
+            <text class="living-value">{{accommodationDisplay.building}}</text>
+          </view>
+        </view>
+      </block>
+      <view wx:else class="empty-state">暂未查询到住宿信息</view>
+    </view>
+
+    <view class="section">
+      <view class="section-heading">快捷功能</view>
+      <view class="feature-grid">
+        <view class="feature-card repair" data-url="/pages/repair/repair" bindtap="goTab">
+          <view class="feature-icon">修</view>
+          <view class="feature-title">宿舍报修</view>
+          <view class="feature-desc">提交维修并查看处理进度</view>
+        </view>
+
+        <view class="feature-card change" data-url="/pages/change/change" bindtap="goTab">
+          <view class="feature-icon">换</view>
+          <view class="feature-title">换宿申请</view>
+          <view class="feature-desc">在线申请调整寝室床位</view>
+        </view>
+
+        <view class="feature-card visit" data-url="/pages/visit/visit" bindtap="goTab">
+          <view class="feature-icon">访</view>
+          <view class="feature-title">来访登记</view>
+          <view class="feature-desc">登记访客信息和来访时间</view>
+        </view>
+
+        <view class="feature-card profile" data-url="/pages/profile/profile" bindtap="goTab">
+          <view class="feature-icon">我</view>
+          <view class="feature-title">个人资料</view>
+          <view class="feature-desc">查看资料并更换头像</view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

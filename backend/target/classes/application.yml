@@ -1,0 +1,39 @@
+server:
+  port: 8080
+spring:
+  application:
+    name: dormitory-management
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/XueShengSuShe?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true
+    username: root
+    password: ttcc7798521
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      # 改为 create 或 create-drop 以便每次启动时重新加载 data.sql 数据
+      # create: 启动时删除旧表建新表，加载数据；关闭时不删除表
+      # update: 仅更新表结构，不会重复加载 data.sql (除非表是空的)
+      ddl-auto: update
+    defer-datasource-initialization: true # 确保在 Hibernate 创建表之后再执行 data.sql
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+
+# JWT配置
+jwt:
+  secret: dormitory-management-secret-key-2024-this-is-a-very-long-secret-key-for-jwt-token-generation-and-validation
+  expiration: 86400000 # 24小时
+
+# 日志配置
+logging:
+  level:
+    com.dormitory: debug
+    org.springframework.security: debug
+  # 移除自定义console pattern，使用Spring Boot默认的彩色输出

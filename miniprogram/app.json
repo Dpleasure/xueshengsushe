@@ -1,0 +1,46 @@
+{
+  "pages": [
+    "pages/login/login",
+    "pages/home/home",
+    "pages/profile/profile",
+    "pages/repair/repair",
+    "pages/change/change",
+    "pages/visit/visit"
+  ],
+  "window": {
+    "navigationBarTitleText": "学生宿舍管理",
+    "navigationBarBackgroundColor": "#2563eb",
+    "navigationBarTextStyle": "white",
+    "backgroundColor": "#f6f8fb",
+    "backgroundTextStyle": "dark"
+  },
+  "tabBar": {
+    "color": "#64748b",
+    "selectedColor": "#2563eb",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/home/home",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/repair/repair",
+        "text": "报修"
+      },
+      {
+        "pagePath": "pages/change/change",
+        "text": "换宿"
+      },
+      {
+        "pagePath": "pages/visit/visit",
+        "text": "来访"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的"
+      }
+    ]
+  },
+  "style": "v2"
+}
