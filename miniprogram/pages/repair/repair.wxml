@@ -1,0 +1,40 @@
+<view class="page">
+  <image class="page-bg" src="{{useLocalBg ? localFallback : bgUrl}}" mode="aspectFill" binderror="onBgError" />
+  <view class="page-bg-mask"></view>
+
+  <view class="content-layer">
+    <view class="page-hero">
+      <view class="kicker light">维修服务</view>
+      <view class="page-title">宿舍报修</view>
+      <view class="page-subtitle">填写宿舍和问题描述，提交后可在下方查看处理进度。</view>
+    </view>
+
+    <view class="section card">
+      <view class="card-title">提交报修</view>
+      <view class="field">
+        <view class="label">宿舍</view>
+        <input class="input" placeholder-class="input-placeholder" placeholder="例如 A-101" value="{{form.dormitory}}" data-field="dormitory" bindinput="onInput" />
+      </view>
+      <view class="field">
+        <view class="label">问题描述</view>
+        <textarea class="textarea" placeholder-class="textarea-placeholder" maxlength="2000" placeholder="请描述需要维修的问题" value="{{form.description}}" data-field="description" bindinput="onInput" />
+      </view>
+      <button class="primary-btn" loading="{{submitting}}" bindtap="submitRepair">提交报修</button>
+    </view>
+
+    <view class="section">
+      <view class="section-heading">我的报修</view>
+      <block wx:if="{{repairs.length}}">
+        <view class="list-card" wx:for="{{repairs}}" wx:key="id">
+          <view class="list-head">
+            <view class="item-title">{{item.displayDormitory}}</view>
+            <view class="badge {{item.statusClass}}">{{item.statusText}}</view>
+          </view>
+          <view class="desc">{{item.displayDescription}}</view>
+          <view class="time">{{item.repairTimeText}}</view>
+        </view>
+      </block>
+      <view wx:else class="empty card">暂无报修记录</view>
+    </view>
+  </view>
+</view>

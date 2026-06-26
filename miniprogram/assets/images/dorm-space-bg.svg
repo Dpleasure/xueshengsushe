@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="2560" viewBox="0 0 1440 2560" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <radialGradient id="sky" cx="48%" cy="28%" r="78%">
+      <stop offset="0" stop-color="#263f88"/>
+      <stop offset="0.42" stop-color="#111f4d"/>
+      <stop offset="1" stop-color="#030816"/>
+    </radialGradient>
+    <radialGradient id="nebulaA" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#6dd3ff" stop-opacity="0.85"/>
+      <stop offset="0.48" stop-color="#7c3aed" stop-opacity="0.24"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="nebulaB" cx="50%" cy="50%" r="50%">
+      <stop offset="0" stop-color="#f8d66d" stop-opacity="0.7"/>
+      <stop offset="0.42" stop-color="#fb7185" stop-opacity="0.2"/>
+      <stop offset="1" stop-color="#000" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="blur">
+      <feGaussianBlur stdDeviation="52"/>
+    </filter>
+    <pattern id="stars" width="160" height="160" patternUnits="userSpaceOnUse">
+      <circle cx="22" cy="38" r="1.6" fill="#fff" opacity="0.85"/>
+      <circle cx="84" cy="22" r="1.2" fill="#c7f9ff" opacity="0.72"/>
+      <circle cx="132" cy="92" r="1.5" fill="#fff6c7" opacity="0.78"/>
+      <circle cx="48" cy="132" r="1.1" fill="#fff" opacity="0.74"/>
+      <circle cx="112" cy="146" r="1.8" fill="#dbf5ff" opacity="0.78"/>
+    </pattern>
+  </defs>
+  <rect width="1440" height="2560" fill="url(#sky)"/>
+  <ellipse cx="680" cy="610" rx="620" ry="210" fill="url(#nebulaA)" filter="url(#blur)" transform="rotate(-12 680 610)"/>
+  <ellipse cx="930" cy="940" rx="430" ry="180" fill="url(#nebulaB)" filter="url(#blur)" transform="rotate(19 930 940)"/>
+  <rect width="1440" height="2560" fill="url(#stars)" opacity="0.9"/>
+  <g opacity="0.45">
+    <path d="M0 1960 C180 1880 310 1920 490 1840 C690 1750 820 1870 1020 1760 C1180 1670 1320 1710 1440 1640 L1440 2560 L0 2560 Z" fill="#071226"/>
+    <path d="M0 2100 C230 2000 420 2090 660 1990 C870 1902 1040 2070 1440 1930 L1440 2560 L0 2560 Z" fill="#050a18"/>
+  </g>
+  <rect width="1440" height="2560" fill="#000" opacity="0.14"/>
+</svg>

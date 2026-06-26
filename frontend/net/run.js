@@ -1,5 +1,6 @@
 import axios from "axios";
 import {ElMessage} from "element-plus";
+import { withApiBaseUrl } from "@/api/baseUrl";
 const defaultError=(err)=> {
   console.error('请求错误:', err)
   let errorMessage = '你的post或者get请求有一些错误请联系管理员'
@@ -17,7 +18,7 @@ const defaultError=(err)=> {
 }
 const defaultFailure=(message)=>ElMessage.warning(message)
 function post(url, data,success,failure=defaultFailure,error=defaultError) {
-  axios.post(url, data,{
+  axios.post(withApiBaseUrl(url), data,{
       headers:{
           'Content-Type': 'application/json'
       }
@@ -30,7 +31,7 @@ function post(url, data,success,failure=defaultFailure,error=defaultError) {
 
 }
 function get(url, success,failure=defaultFailure,error=defaultError) {
-    axios.get(url,{
+    axios.get(withApiBaseUrl(url),{
     }).then(({data})=> {
         if (data.success)
             success(data.message,data.status);

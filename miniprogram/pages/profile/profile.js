@@ -1,11 +1,12 @@
 const api = require('../../utils/api');
+const { loadAvatarUrl } = require('../../utils/avatar');
 const { localFallback, pageBackground } = require('../../utils/backgrounds');
 
 const displayValue = (value) => (value === undefined || value === null || value === '' ? '-' : value);
 const displayBed = (value) => {
   const text = displayValue(value);
-  if (text === '-' || text.includes('床')) return text;
-  return `${text}号床`;
+  if (text === '-' || text.includes('\u5e8a')) return text;
+  return `${text}\u53f7\u5e8a`;
 };
 
 Page({
@@ -16,10 +17,10 @@ Page({
     userInfo: {},
     accommodation: null,
     accommodationDisplay: null,
-    avatarText: '学',
+    avatarText: '\u5b66',
     avatarUrl: '',
     uploading: false,
-    displayName: '学生',
+    displayName: '\u5b66\u751f',
     displayStudentId: '-',
     displayUsername: '-'
   },
@@ -31,16 +32,21 @@ Page({
   onShow() {
     if (!getApp().requireLogin()) return;
     const userInfo = wx.getStorageSync('userInfo') || {};
-    const name = userInfo.name || userInfo.username || '学生';
+    const name = userInfo.name || userInfo.username || '\u5b66\u751f';
     this.setData({
       userInfo,
       avatarText: String(name).slice(0, 1),
-      avatarUrl: this.normalizeAvatar(userInfo.avatar),
       displayName: name,
       displayStudentId: displayValue(userInfo.studentId),
       displayUsername: displayValue(userInfo.username)
     });
+    this.refreshAvatar(userInfo.avatar);
     this.fetchAccommodation(userInfo.studentId);
+  },
+
+  async refreshAvatar(avatar) {
+    const avatarUrl = await loadAvatarUrl(avatar);
+    this.setData({ avatarUrl });
   },
 
   async fetchAccommodation(studentId) {
@@ -73,7 +79,7 @@ Page({
         const file = res.tempFiles && res.tempFiles[0];
         if (!file || !file.tempFilePath) return;
         if (file.size && file.size > 2 * 1024 * 1024) {
-          wx.showToast({ title: '图片不能超过 2MB', icon: 'none' });
+          wx.showToast({ title: '\u56fe\u7247\u4e0d\u80fd\u8d85\u8fc7 2MB', icon: 'none' });
           return;
         }
         await this.uploadAvatar(file.tempFilePath);
@@ -92,26 +98,18 @@ Page({
       };
       wx.setStorageSync('userInfo', nextUserInfo);
       getApp().globalData.userInfo = nextUserInfo;
-      this.setData({
-        userInfo: nextUserInfo,
-        avatarUrl: this.normalizeAvatar(nextUserInfo.avatar)
-      });
-      wx.showToast({ title: '头像已更新', icon: 'success' });
+      this.setData({ userInfo: nextUserInfo });
+      await this.refreshAvatar(nextUserInfo.avatar);
+      wx.showToast({ title: '\u5934\u50cf\u5df2\u66f4\u65b0', icon: 'success' });
     } finally {
       this.setData({ uploading: false });
     }
   },
 
-  normalizeAvatar(avatar) {
-    if (!avatar || avatar === '👤') return '';
-    if (/^https?:\/\//i.test(avatar) || avatar.startsWith('data:')) return avatar;
-    return `${getApp().globalData.baseUrl}${avatar}`;
-  },
-
   logout() {
     wx.showModal({
-      title: '退出登录',
-      content: '确定要退出当前账号吗？',
+      title: '\u9000\u51fa\u767b\u5f55',
+      content: '\u786e\u5b9a\u8981\u9000\u51fa\u5f53\u524d\u8d26\u53f7\u5417\uff1f',
       success: (res) => {
         if (res.confirm) getApp().logout();
       }

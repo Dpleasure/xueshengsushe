@@ -1,0 +1,62 @@
+<view class="page">
+  <image class="page-bg" src="{{useLocalBg ? localFallback : bgUrl}}" mode="aspectFill" binderror="onBgError" />
+  <view class="page-bg-mask"></view>
+
+  <view class="content-layer">
+    <view class="page-hero">
+      <view class="kicker light">访客管理</view>
+      <view class="page-title">来访登记</view>
+      <view class="page-subtitle">登记访客姓名、来访时间和事由，方便宿舍管理员审核。</view>
+    </view>
+
+    <view class="section card">
+      <view class="card-title">提交来访登记</view>
+      <view class="field">
+        <view class="label">访客姓名</view>
+        <input class="input" placeholder-class="input-placeholder" placeholder="请输入访客姓名" value="{{form.visitorName}}" data-field="visitorName" bindinput="onInput" />
+      </view>
+      <view class="field">
+        <view class="label">来访宿舍</view>
+        <input class="input" placeholder-class="input-placeholder" placeholder="例如 A-101" value="{{form.dormitory}}" data-field="dormitory" bindinput="onInput" />
+      </view>
+      <view class="two-columns">
+        <view class="field">
+          <view class="label">日期</view>
+          <picker mode="date" value="{{form.visitDate}}" bindchange="onDateChange">
+            <view class="picker">{{visitDateText}}</view>
+          </picker>
+        </view>
+        <view class="field">
+          <view class="label">时间</view>
+          <picker mode="time" value="{{form.visitTime}}" bindchange="onTimeChange">
+            <view class="picker">{{visitTimeText}}</view>
+          </picker>
+        </view>
+      </view>
+      <view class="field">
+        <view class="label">来访事由</view>
+        <textarea class="textarea" placeholder-class="textarea-placeholder" maxlength="500" placeholder="请简要说明来访事由" value="{{form.description}}" data-field="description" bindinput="onInput" />
+      </view>
+      <button class="primary-btn" loading="{{submitting}}" bindtap="submitVisit">提交登记</button>
+    </view>
+
+    <view class="section">
+      <view class="section-heading">我的来访记录</view>
+      <block wx:if="{{visits.length}}">
+        <view class="list-card" wx:for="{{visits}}" wx:key="id">
+          <view class="list-head">
+            <view class="item-title">{{item.displayVisitorName}}</view>
+            <view class="badge {{item.statusClass}}">{{item.statusText}}</view>
+          </view>
+          <view class="info-row compact-row">
+            <view class="row-label">宿舍</view>
+            <view class="row-value">{{item.displayDormitory}}</view>
+          </view>
+          <view class="desc">{{item.displayDescription}}</view>
+          <view class="time">{{item.visitTimeText}}</view>
+        </view>
+      </block>
+      <view wx:else class="empty card">暂无来访记录</view>
+    </view>
+  </view>
+</view>

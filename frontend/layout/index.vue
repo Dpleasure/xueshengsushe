@@ -179,7 +179,7 @@ const toggleGroup = (group) => {
 }
 
 const handleLogout = () => {
-    get('http://localhost:8080/api/auth/logout',(message)=>{
+    get('/api/auth/logout',(message)=>{
       localStorage.removeItem('token')
       localStorage.removeItem('userInfo')
       ElMessage.success(message)
@@ -366,4 +366,3 @@ const handleLogout = () => {
   overflow-y: auto;
 }
 </style>
-

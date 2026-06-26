@@ -1,0 +1,79 @@
+<view class="page">
+  <image class="page-bg" src="{{useLocalBg ? localFallback : bgUrl}}" mode="aspectFill" binderror="onBgError" />
+  <view class="page-bg-mask"></view>
+
+  <view class="content-layer">
+    <view class="profile-hero card">
+      <view class="avatar-wrap" bindtap="chooseAvatar">
+        <image wx:if="{{avatarUrl}}" class="avatar-img" src="{{avatarUrl}}" mode="aspectFill" />
+        <view wx:else class="avatar">{{avatarText}}</view>
+        <view class="avatar-action">{{uploading ? '上传中' : '更换头像'}}</view>
+      </view>
+      <view class="profile-name">{{displayName}}</view>
+      <view class="profile-role">学生成员</view>
+      <view class="profile-meta">学号 {{displayStudentId}}</view>
+    </view>
+
+    <view class="section stat-grid">
+      <view class="stat-card">
+        <text class="stat-value">{{displayStudentId}}</text>
+        <text class="stat-label">学工号</text>
+      </view>
+      <view class="stat-card">
+        <text class="stat-value truncate">{{displayUsername}}</text>
+        <text class="stat-label">账户名</text>
+      </view>
+      <view class="stat-card">
+        <text class="stat-value">学生</text>
+        <text class="stat-label">权限</text>
+      </view>
+    </view>
+
+    <view class="section card">
+      <view class="card-header">
+        <view class="header-left">
+          <view class="kicker">账户资料</view>
+          <view class="card-title">基本信息</view>
+        </view>
+      </view>
+      <view class="info-row">
+        <view class="row-label">账号名称</view>
+        <view class="row-value">{{displayUsername}}</view>
+      </view>
+      <view class="info-row">
+        <view class="row-label">姓名</view>
+        <view class="row-value">{{displayName}}</view>
+      </view>
+      <view class="info-row">
+        <view class="row-label">角色类型</view>
+        <view class="row-value accent">学生成员</view>
+      </view>
+    </view>
+
+    <view class="section card">
+      <view class="card-header">
+        <view class="header-left">
+          <view class="kicker">住宿归属</view>
+          <view class="card-title">宿舍信息</view>
+        </view>
+      </view>
+      <block wx:if="{{accommodation}}">
+        <view class="info-row">
+          <view class="row-label">所属楼栋</view>
+          <view class="row-value">{{accommodationDisplay.building}}</view>
+        </view>
+        <view class="info-row">
+          <view class="row-label">宿舍房间</view>
+          <view class="row-value">{{accommodationDisplay.dormitory}}</view>
+        </view>
+        <view class="info-row">
+          <view class="row-label">床位编码</view>
+          <view class="row-value accent">{{accommodationDisplay.bed}}</view>
+        </view>
+      </block>
+      <view wx:else class="empty-state">您目前暂无住宿记录分配</view>
+    </view>
+
+    <button class="logout-btn" bindtap="logout">退出登录</button>
+  </view>
+</view>

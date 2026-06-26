@@ -1,8 +1,9 @@
 import axios from 'axios'
+import { API_BASE_URL } from './baseUrl'
 
 // 创建 axios 实例
 const api = axios.create({
-  baseURL: 'http://localhost:8080', // 后端 API 地址
+  baseURL: API_BASE_URL, // 后端 API 地址
   timeout: 10000, // 10秒超时
   headers: {
     'Content-Type': 'application/json'
@@ -62,7 +63,7 @@ api.interceptors.response.use(
         case 401:
           message = '未授权，请重新登录'
           localStorage.removeItem('token')
-          window.location.href = '/login'
+          window.location.href = '/auth'
           break
         case 403:
           message = '拒绝访问'

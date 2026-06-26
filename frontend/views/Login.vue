@@ -1,101 +1,135 @@
 <template>
-  <div class="login-container">
-    <!-- 卡通背景元素 -->
-    <div class="cartoon-bg">
-      <div class="cloud cloud-1">☁️</div>
-      <div class="cloud cloud-2">☁️</div>
-      <div class="sun">☀️</div>
-      <div class="tree tree-1">🌲</div>
-      <div class="tree tree-2">🌳</div>
-    </div>
-
-    <div class="login-box">
-      <div class="cartoon-header">
-        <span class="school-icon">🏫</span>
+  <main class="auth-page">
+    <section class="auth-shell">
+      <div class="brand-copy">
+        <button class="back-link" type="button" @click="router.push('/auth')">返回入口</button>
+        <p class="eyebrow">Student Residence</p>
+        <h1>登录学生宿舍管理系统</h1>
+        <p>
+          <span class="typewriter">{{ typedIntro }}</span>
+          <span class="caret" aria-hidden="true"></span>
+        </p>
       </div>
-      <h1 class="login-title">欢迎登录学生宿舍管理系统</h1>
-      <form class="login-form" @submit.prevent="handleLogin">
-        <div class="input-group">
-          <span class="input-icon">👤</span>
-          <input
-            type="text"
-            class="login-input"
-            placeholder="请输入账号"
-            v-model="form.username"
-          >
+
+      <section class="auth-card">
+        <div class="card-title">
+          <span class="card-mark"></span>
+          <div>
+            <h2>账号登录</h2>
+            <p>请输入账号信息完成身份验证</p>
+          </div>
         </div>
-        <div class="input-group">
-          <span class="input-icon">🔒</span>
-          <input
+
+        <el-form ref="loginFormRef" :model="form" :rules="rules" label-position="top" class="auth-form">
+          <el-form-item label="用户名" prop="username">
+            <el-input v-model.trim="form.username" size="large" placeholder="请输入账号" clearable />
+          </el-form-item>
+
+          <el-form-item label="密码" prop="password">
+            <el-input
+              v-model="form.password"
+              size="large"
+              placeholder="请输入密码"
+              type="password"
+              show-password
+              clearable
+            />
+          </el-form-item>
+
+          <el-form-item label="学号 / 工号" prop="studentId">
+            <el-input v-model.trim="form.studentId" size="large" placeholder="请输入学号或工号" clearable />
+          </el-form-item>
+
+          <el-form-item label="角色" prop="role">
+            <el-select v-model="form.role" size="large" placeholder="请选择角色" class="full-width">
+              <el-option label="管理员" value="admin" />
+              <el-option label="学生" value="student" />
+            </el-select>
+          </el-form-item>
+
+          <div class="verify-label">滑动验证</div>
+          <div
+            ref="dragDiv"
+            class="drag-verify"
+            :class="{ verified: confirmSuccess }"
+            @mouseleave="handleMouseUp"
+          >
+            <div class="drag-bg" :style="{ width: `${dragWidth}px` }"></div>
+            <div class="drag-text">{{ confirmWords }}</div>
+            <button
+              ref="moveDiv"
+              class="drag-handler"
+              :class="{ verified: confirmSuccess }"
+              type="button"
+              :style="{ transform: `translateX(${handlerLeft}px)` }"
+              @mousedown="handleMouseDown"
+              @touchstart.prevent="handleTouchStart"
+            >
+              {{ confirmSuccess ? '✓' : '›' }}
+            </button>
+          </div>
+
+          <el-button
+            type="primary"
+            size="large"
+            class="submit-button"
+            :loading="isSubmitting"
+            :disabled="!confirmSuccess"
+            @click="handleLogin"
+          >
+            登录
+          </el-button>
+        </el-form>
+
+        <div class="card-footer">
+          <el-link type="primary" :underline="false" @click="showForgotPassword = true">忘记密码？</el-link>
+          <span>还没有账号？</span>
+          <el-link type="primary" :underline="false" @click="router.push('/register')">立即注册</el-link>
+        </div>
+      </section>
+    </section>
+
+    <el-dialog v-model="showForgotPassword" title="重置管理员密码" width="420px" class="forgot-dialog">
+      <el-form ref="forgotFormRef" :model="forgotPasswordForm" :rules="forgotRules" label-position="top">
+        <el-form-item label="管理员账号" prop="username">
+          <el-input v-model.trim="forgotPasswordForm.username" placeholder="请输入管理员账号" />
+        </el-form-item>
+        <el-form-item label="邮箱" prop="email">
+          <el-input v-model.trim="forgotPasswordForm.email" placeholder="请输入邮箱" />
+        </el-form-item>
+        <el-form-item label="手机号" prop="phone">
+          <el-input v-model.trim="forgotPasswordForm.phone" placeholder="请输入手机号" maxlength="11" />
+        </el-form-item>
+        <el-form-item label="新密码" prop="newPassword">
+          <el-input
+            v-model="forgotPasswordForm.newPassword"
+            placeholder="请输入新密码"
             type="password"
-            class="login-input"
-            placeholder="请输入密码"
-            v-model="form.password"
-          >
-        </div>
-        <div class="input-group">
-          <span class="input-icon">🆔</span>
-          <input
-            type="text"
-            class="login-input"
-            placeholder="请输入工号或学号"
-            v-model="form.studentId"
-          >
-        </div>
-        <select class="login-select" v-model="form.role">
-          <option value="">请选择角色</option>
-          <option value="admin">管理员</option>
-          <option value="student">学生</option>
-        </select>
-        <!-- 滑动验证码 -->
-        <div ref="dragDiv" class="drag">
-          <div class="drag_bg"></div>
-          <div class="drag_text">{{ confirmWords }}</div>
-          <div ref="moveDiv" :class="{'handler_ok_bg':confirmSuccess}" class="handler handler_bg"
-               style="position: absolute;top: 0px;left: 0px;" @mousedown="mousedownFn($event)"></div>
-        </div>
-        <button type="submit" class="login-btn" :disabled="!confirmSuccess">登 录</button>
-      </form>
-      <div class="login-footer">
-        <a href="#" @click.prevent="openForgotPasswordDialog" class="register-link">忘记密码？</a>
-      </div>
-    </div>
-  </div>
+            show-password
+          />
+        </el-form-item>
+      </el-form>
 
-    <!-- 忘记密码弹窗 -->
-    <div v-if="showForgotPassword" class="modal-overlay" @click="closeForgotPasswordDialog">
-      <div class="modal-content" @click.stop>
-        <h2 class="login-title">重置管理员密码</h2>
-        <form class="login-form" @submit.prevent="handleForgotPassword">
-          <div class="input-group">
-            <span class="input-icon">👤</span>
-            <input type="text" class="login-input" placeholder="请输入管理员账号" v-model="forgotPasswordForm.username">
-          </div>
-          <div class="input-group">
-            <span class="input-icon">✉️</span>
-            <input type="email" class="login-input" placeholder="请输入邮箱" v-model="forgotPasswordForm.email">
-          </div>
-          <div class="input-group">
-            <span class="input-icon">📞</span>
-            <input type="text" class="login-input" placeholder="请输入手机号" v-model="forgotPasswordForm.phone">
-          </div>
-           <div class="input-group">
-            <span class="input-icon">🔒</span>
-            <input type="password" class="login-input" placeholder="请输入新密码" v-model="forgotPasswordForm.newPassword">
-          </div>
-          <button type="submit" class="login-btn">确认重置</button>
-        </form>
-      </div>
-    </div>
+      <template #footer>
+        <el-button @click="showForgotPassword = false">取消</el-button>
+        <el-button type="primary" :loading="isResetting" @click="handleForgotPassword">确认重置</el-button>
+      </template>
+    </el-dialog>
+  </main>
 </template>
 
 <script setup>
-import {reactive, ref, onMounted, onUnmounted, nextTick} from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import {post} from "@/net/run";
-import {ElMessage} from "element-plus";
+import { ElMessage } from 'element-plus'
+import { post } from '@/net/run'
 
 const router = useRouter()
+
+const loginFormRef = ref(null)
+const forgotFormRef = ref(null)
+const dragDiv = ref(null)
+const moveDiv = ref(null)
 
 const form = reactive({
   username: '',
@@ -104,7 +138,6 @@ const form = reactive({
   role: ''
 })
 
-const showForgotPassword = ref(false)
 const forgotPasswordForm = reactive({
   username: '',
   email: '',
@@ -112,463 +145,545 @@ const forgotPasswordForm = reactive({
   newPassword: ''
 })
 
-// 滑动验证码相关
-const dragDiv = ref(null)
-const moveDiv = ref(null)
+const showForgotPassword = ref(false)
+const isSubmitting = ref(false)
+const isResetting = ref(false)
 const beginClientX = ref(0)
-const mouseMoveStata = ref(false)
-const maxwidth = ref('')
-const confirmWords = ref('拖动滑块验证')
+const mouseMoving = ref(false)
+const maxWidth = ref(0)
+const handlerLeft = ref(0)
 const confirmSuccess = ref(false)
+const loginIntro = '处理住宿、报修、来访和换宿申请，从身份确认开始。'
+const typedIntro = ref('')
+let typeTimer = null
 
-const openForgotPasswordDialog = () => {
-  showForgotPassword.value = true
-}
+const confirmWords = computed(() => (confirmSuccess.value ? '验证通过' : '按住滑块拖动到最右侧'))
+const dragWidth = computed(() => handlerLeft.value + (moveDiv.value?.offsetWidth || 0))
 
-const closeForgotPasswordDialog = () => {
-  showForgotPassword.value = false
-}
-
-const handleForgotPassword = () => {
-  if (!forgotPasswordForm.username || !forgotPasswordForm.email || !forgotPasswordForm.phone || !forgotPasswordForm.newPassword) {
-    ElMessage.warning('请填写所有字段');
-    return;
+const startTypewriter = () => {
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  if (reduceMotion) {
+    typedIntro.value = loginIntro
+    return
   }
 
-  post('http://localhost:8080/api/auth/forgot-password', {
-    username: forgotPasswordForm.username,
-    email: forgotPasswordForm.email,
-    phone: forgotPasswordForm.phone,
-    newPassword: forgotPasswordForm.newPassword
-  }, (data) => {
-    ElMessage.success(data); // 后端直接返回消息字符串
-    closeForgotPasswordDialog();
-  }, (error) => {
-    ElMessage.error(error);
-  });
+  let index = 0
+  const type = () => {
+    typedIntro.value = loginIntro.slice(0, index)
+    index += 1
+    if (index <= loginIntro.length) {
+      typeTimer = window.setTimeout(type, 44)
+    }
+  }
+  typeTimer = window.setTimeout(type, 260)
 }
 
-// 滑动验证码方法
-const mousedownFn = (e) => {
+const rules = {
+  username: [{ required: true, message: '请输入账号', trigger: 'blur' }],
+  password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+  studentId: [{ required: true, message: '请输入学号或工号', trigger: 'blur' }],
+  role: [{ required: true, message: '请选择角色', trigger: 'change' }]
+}
+
+const forgotRules = {
+  username: [{ required: true, message: '请输入管理员账号', trigger: 'blur' }],
+  email: [
+    { required: true, message: '请输入邮箱', trigger: 'blur' },
+    { type: 'email', message: '请输入正确的邮箱格式', trigger: 'blur' }
+  ],
+  phone: [
+    { required: true, message: '请输入手机号', trigger: 'blur' },
+    { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur' }
+  ],
+  newPassword: [
+    { required: true, message: '请输入新密码', trigger: 'blur' },
+    { min: 6, message: '密码长度至少 6 位', trigger: 'blur' }
+  ]
+}
+
+const updateMaxWidth = () => {
+  if (dragDiv.value && moveDiv.value) {
+    maxWidth.value = dragDiv.value.clientWidth - moveDiv.value.clientWidth
+  }
+}
+
+const handleMouseDown = (event) => {
+  if (confirmSuccess.value) return
+  updateMaxWidth()
+  mouseMoving.value = true
+  beginClientX.value = event.clientX - handlerLeft.value
+}
+
+const handleTouchStart = (event) => {
+  if (confirmSuccess.value) return
+  updateMaxWidth()
+  mouseMoving.value = true
+  beginClientX.value = event.touches[0].clientX - handlerLeft.value
+}
+
+const moveHandler = (clientX) => {
+  if (!mouseMoving.value || confirmSuccess.value) return
+  const nextLeft = Math.min(Math.max(clientX - beginClientX.value, 0), maxWidth.value)
+  handlerLeft.value = nextLeft
+
+  if (nextLeft >= maxWidth.value - 2) {
+    confirmSuccess.value = true
+    handlerLeft.value = maxWidth.value
+    mouseMoving.value = false
+  }
+}
+
+const handleMouseMove = (event) => moveHandler(event.clientX)
+const handleTouchMove = (event) => moveHandler(event.touches[0].clientX)
+
+const handleMouseUp = () => {
+  if (confirmSuccess.value) return
+  mouseMoving.value = false
+  handlerLeft.value = 0
+}
+
+const resetCaptcha = () => {
+  confirmSuccess.value = false
+  mouseMoving.value = false
+  handlerLeft.value = 0
+  nextTick(updateMaxWidth)
+}
+
+const handleLogin = async () => {
+  const valid = await loginFormRef.value?.validate().catch(() => false)
+  if (!valid) return
+
   if (!confirmSuccess.value) {
-    e.preventDefault && e.preventDefault()
-    // 确保 maxwidth 已计算
-    if (!maxwidth.value && dragDiv.value && moveDiv.value) {
-      maxwidth.value = dragDiv.value.clientWidth - moveDiv.value.clientWidth
-    }
-    mouseMoveStata.value = true
-    beginClientX.value = e.clientX
+    ElMessage.warning('请先完成滑动验证')
+    return
   }
+
+  isSubmitting.value = true
+  post(
+    '/api/auth/login',
+    {
+      username: form.username,
+      password: form.password,
+      studentId: form.studentId,
+      role: form.role
+    },
+    (responseData) => {
+      localStorage.setItem('token', responseData.token)
+      localStorage.setItem(
+        'userInfo',
+        JSON.stringify({
+          username: responseData.username,
+          name: responseData.name,
+          role: responseData.role,
+          studentId: responseData.studentId
+        })
+      )
+      ElMessage.success(responseData.message || '登录成功')
+      router.push('/home')
+      isSubmitting.value = false
+    },
+    (message) => {
+      ElMessage.error(message || '登录失败，请检查用户名、密码和角色')
+      resetCaptcha()
+      isSubmitting.value = false
+    },
+    (error) => {
+      ElMessage.error(error?.response?.data?.message || '登录请求失败，请稍后重试')
+      resetCaptcha()
+      isSubmitting.value = false
+    }
+  )
 }
 
-const successFunction = () => {
-  confirmSuccess.value = true
-  confirmWords.value = '验证通过'
-  // 不再移除事件监听器，而是通过 confirmSuccess.value 来控制是否允许拖动
-  const dragText = document.getElementsByClassName('drag_text')[0]
-  const handler = document.getElementsByClassName('handler')[0]
-  const dragBg = document.getElementsByClassName('drag_bg')[0]
-  if (dragText) dragText.style.color = '#fff'
-  if (handler) {
-    handler.style.left = maxwidth.value + 'px'
-    handler.classList.remove('handler_bg')
-    handler.classList.add('handler_ok_bg')
-  }
-  if (dragBg) dragBg.style.width = maxwidth.value + 'px'
-  // 停止拖动状态
-  mouseMoveStata.value = false
-}
+const handleForgotPassword = async () => {
+  const valid = await forgotFormRef.value?.validate().catch(() => false)
+  if (!valid) return
 
-const mouseMoveFn = (e) => {
-  if (mouseMoveStata.value) {
-    // 确保 maxwidth 已计算
-    if (!maxwidth.value && dragDiv.value && moveDiv.value) {
-      maxwidth.value = dragDiv.value.clientWidth - moveDiv.value.clientWidth
+  isResetting.value = true
+  post(
+    '/api/auth/forgot-password',
+    { ...forgotPasswordForm },
+    (data) => {
+      ElMessage.success(data || '密码已重置')
+      showForgotPassword.value = false
+      isResetting.value = false
+    },
+    (message) => {
+      ElMessage.error(message || '密码重置失败')
+      isResetting.value = false
+    },
+    (error) => {
+      ElMessage.error(error?.response?.data?.message || '密码重置请求失败')
+      isResetting.value = false
     }
-    if (!maxwidth.value) return
-    
-    let width = e.clientX - beginClientX.value
-    const handler = document.getElementsByClassName('handler')[0]
-    const dragBg = document.getElementsByClassName('drag_bg')[0]
-    if (width > 0 && width <= maxwidth.value) {
-      if (handler) handler.style.left = width + 'px'
-      if (dragBg) dragBg.style.width = width + 'px'
-    } else if (width > maxwidth.value) {
-      successFunction()
-      console.log('验证成功')
-    }
-  }
-}
-
-const moseUpFn = (e) => {
-  mouseMoveStata.value = false
-  var width = e.clientX - beginClientX.value
-  const handler = document.getElementsByClassName('handler')[0]
-  const dragBg = document.getElementsByClassName('drag_bg')[0]
-  if (width < maxwidth.value) {
-    if (handler) handler.style.left = 0 + 'px'
-    if (dragBg) dragBg.style.width = 0 + 'px'
-  }
+  )
 }
 
 onMounted(() => {
-  nextTick(() => {
-    if (dragDiv.value && moveDiv.value) {
-      maxwidth.value = dragDiv.value.clientWidth - moveDiv.value.clientWidth
-    }
-  })
-  document.getElementsByTagName('html')[0].addEventListener('mousemove', mouseMoveFn)
-  document.getElementsByTagName('html')[0].addEventListener('mouseup', moseUpFn)
+  startTypewriter()
+  nextTick(updateMaxWidth)
+  window.addEventListener('resize', updateMaxWidth)
+  window.addEventListener('mousemove', handleMouseMove)
+  window.addEventListener('mouseup', handleMouseUp)
+  window.addEventListener('touchmove', handleTouchMove)
+  window.addEventListener('touchend', handleMouseUp)
 })
 
 onUnmounted(() => {
-  document.getElementsByTagName('html')[0].removeEventListener('mousemove', mouseMoveFn)
-  document.getElementsByTagName('html')[0].removeEventListener('mouseup', moseUpFn)
+  if (typeTimer) window.clearTimeout(typeTimer)
+  window.removeEventListener('resize', updateMaxWidth)
+  window.removeEventListener('mousemove', handleMouseMove)
+  window.removeEventListener('mouseup', handleMouseUp)
+  window.removeEventListener('touchmove', handleTouchMove)
+  window.removeEventListener('touchend', handleMouseUp)
 })
-
-const handleLogin = () => {
-  if (!form.username) {
-    alert('请输入账号')
-    return
-  }
-  if (!form.password) {
-    alert('请输入密码')
-    return
-  }
-  if (!form.studentId) {
-    alert('请输入工号或学号')
-    return
-  }
-  if (!form.role) {
-    alert('请选择角色')
-    return
-  }
-  if (!confirmSuccess.value) {
-    alert('请先完成滑动验证')
-    return
-  }
-
-  post('http://localhost:8080/api/auth/login', {
-    username: form.username,
-    password: form.password,
-    studentId: form.studentId,
-    role: form.role
-  },(responseData, status)=>{  // success回调：responseData是response Map（包含token、username、role、message等）
-    // 保存token和用户信息
-    localStorage.setItem('token', responseData.token)
-    localStorage.setItem('userInfo', JSON.stringify({
-      username: responseData.username,
-      name: responseData.name, // 存储学生姓名
-      role: responseData.role,
-      studentId:responseData.studentId
-    }))
-    ElMessage.success(responseData.message || '登录成功')
-    router.push('/home')
-  }, (message, status) => {  // failure回调：处理登录失败（包括角色不匹配）
-    ElMessage.error(message || '登录失败，请检查用户名、密码和角色')
-    // 登录失败时重置验证码状态
-    resetCaptcha()
-  })
-}
-
-// 重置验证码的函数
-const resetCaptcha = () => {
-  confirmSuccess.value = false
-  confirmWords.value = '拖动滑块验证'
-  mouseMoveStata.value = false
-  
-  // 重置滑块位置和样式
-  const handler = document.getElementsByClassName('handler')[0]
-  const dragBg = document.getElementsByClassName('drag_bg')[0]
-  const dragText = document.getElementsByClassName('drag_text')[0]
-  
-  if (handler) {
-    handler.style.left = '0px'
-    handler.classList.remove('handler_ok_bg')
-    handler.classList.add('handler_bg')
-  }
-  if (dragBg) dragBg.style.width = '0px'
-  if (dragText) dragText.style.color = ''
-}
 </script>
 
 <style scoped>
-.login-container {
-  width: 100%;
-  height: 100vh;
-  display: flex;
+.auth-page {
+  --ink: #f8fbff;
+  --muted: rgba(226, 235, 246, 0.84);
+  --blue: #1d6fe9;
+  --cyan: #1db7a6;
+  --gold: #f5b84b;
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(245, 184, 75, 0.26), transparent 28%),
+    radial-gradient(circle at 82% 76%, rgba(29, 183, 166, 0.22), transparent 30%),
+    linear-gradient(90deg, rgba(8, 27, 51, 0.92), rgba(14, 42, 71, 0.56) 46%, rgba(8, 27, 51, 0.86)),
+    url('@/assets/images/auth-campus-dusk.jpg') center / cover no-repeat;
+  color: var(--ink);
+}
+
+.auth-shell {
+  min-height: 100vh;
+  width: min(1180px, calc(100% - 48px));
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 430px;
   align-items: center;
-  justify-content: center;
-  /* 修改为清新的蓝色渐变背景，更符合正式界面风格 */
-  background: linear-gradient(135deg, #e6f7ff 0%, #bae7ff 100%);
-  position: relative;
-  overflow: hidden;
+  gap: 64px;
+  padding: 40px 0;
+  animation: pageIn 0.7s ease both;
 }
 
-/* 卡通背景元素样式 */
-.cartoon-bg {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 0;
+.brand-copy {
+  max-width: 610px;
+  animation: riseIn 0.72s ease 0.08s both;
 }
 
-.cloud {
-  position: absolute;
-  font-size: 60px;
-  opacity: 0.8;
-  animation: float 6s ease-in-out infinite;
-}
-
-.cloud-1 {
-  top: 10%;
-  left: 10%;
-  animation-delay: 0s;
-}
-
-.cloud-2 {
-  top: 20%;
-  right: 15%;
-  animation-delay: 2s;
-}
-
-.sun {
-  position: absolute;
-  top: 5%;
-  right: 5%;
-  font-size: 80px;
-  animation: spin 20s linear infinite;
-}
-
-.tree {
-  position: absolute;
-  bottom: 0;
-  font-size: 80px;
-}
-
-.tree-1 {
-  left: 5%;
-}
-
-.tree-2 {
-  right: 5%;
-}
-
-@keyframes float {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-20px); }
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-.login-box {
-  background: rgba(255, 255, 255, 0.95);
-  padding: 40px;
-  border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(24, 144, 255, 0.15);
-  width: 90%;
-  max-width: 400px;
-  z-index: 1;
-  border: 1px solid #e6f7ff;
-}
-
-.cartoon-header {
-  text-align: center;
-  margin-bottom: 10px;
-}
-
-.school-icon {
-  font-size: 64px;
-  display: inline-block;
-  animation: bounce 2s infinite;
-}
-
-@keyframes bounce {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-10px); }
-}
-
-.login-title {
-  text-align: center;
-  color: #1890ff; /* 使用主题蓝 */
-  margin-bottom: 30px;
-  font-size: 24px;
-  font-weight: bold;
-}
-
-.login-form {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.input-group {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.input-icon {
-  position: absolute;
-  left: 12px;
-  font-size: 20px;
-  pointer-events: none;
-}
-
-.login-input {
-  width: 100%;
-  padding: 12px 12px 12px 45px;
-  border: 1px solid #d9d9d9;
-  border-radius: 8px;
-  font-size: 14px;
-  transition: all 0.3s;
-  outline: none;
-  background: #fff;
-}
-
-.login-input:focus {
-  border-color: #1890ff;
-  box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.1);
-}
-
-.login-select {
-  width: 100%;
-  padding: 12px;
-  border: 1px solid #d9d9d9;
-  border-radius: 8px;
-  font-size: 14px;
-  outline: none;
+.back-link {
+  height: 36px;
+  padding: 0 14px;
+  margin-bottom: 54px;
+  border: 1px solid rgba(255, 255, 255, 0.36);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #f8fafc;
   cursor: pointer;
-  transition: all 0.3s;
-  background: #fff;
+  backdrop-filter: blur(12px);
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
 }
 
-.login-select:focus {
-  border-color: #1890ff;
-  box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.1);
-}
-
-.login-btn {
-  width: 100%;
-  padding: 12px;
-  background: #1890ff; /* 使用主题蓝 */
-  color: white;
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.login-btn:hover {
-  background: #40a9ff;
+.back-link:hover {
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(24, 144, 255, 0.3);
+  border-color: rgba(245, 184, 75, 0.72);
+  background: rgba(245, 184, 75, 0.14);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.18);
 }
 
-.login-footer {
-  text-align: center;
-  margin-top: 20px;
-  color: #666;
+.eyebrow {
+  margin: 0 0 16px;
+  color: var(--gold);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.brand-copy h1 {
+  margin: 0;
+  font-size: clamp(40px, 5.4vw, 68px);
+  line-height: 1.08;
+  font-weight: 800;
+  letter-spacing: 0;
+  text-shadow: 0 18px 48px rgba(0, 0, 0, 0.4);
+}
+
+.brand-copy p {
+  min-height: 66px;
+  max-width: 520px;
+  margin: 24px 0 0;
+  color: var(--muted);
+  font-size: 18px;
+  line-height: 1.8;
+}
+
+.typewriter {
+  background: linear-gradient(90deg, #ffffff, #dff8ff 45%, #ffe5a8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.caret {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  margin-left: 3px;
+  transform: translateY(3px);
+  background: var(--gold);
+  animation: blink 0.8s steps(2, start) infinite;
+}
+
+.auth-card {
+  width: 100%;
+  padding: 30px;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: 8px;
+  background: rgba(248, 251, 255, 0.88);
+  box-shadow: 0 30px 90px rgba(4, 13, 28, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.52);
+  backdrop-filter: blur(20px);
+  color: #172033;
+  animation: cardIn 0.72s ease 0.18s both;
+  transition: transform 0.24s ease, box-shadow 0.24s ease, border-color 0.24s ease;
+}
+
+.auth-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(245, 184, 75, 0.62);
+  box-shadow: 0 38px 110px rgba(4, 13, 28, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.62);
+}
+
+.card-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.card-mark {
+  width: 42px;
+  height: 42px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--blue), var(--cyan) 54%, var(--gold));
+  box-shadow: 0 14px 32px rgba(29, 111, 233, 0.3);
+}
+
+.card-title h2 {
+  margin: 0 0 4px;
+  color: #121826;
+  font-size: 26px;
+}
+
+.card-title p {
+  margin: 0;
+  color: #5b6475;
   font-size: 14px;
 }
 
-.register-link {
-  color: #1890ff;
-  text-decoration: none;
-  font-weight: 600;
+.auth-form :deep(.el-form-item__label) {
+  color: #263244;
+  font-weight: 700;
 }
 
-.register-link:hover {
-  text-decoration: underline;
+.auth-form :deep(.el-input__wrapper),
+.auth-form :deep(.el-select__wrapper) {
+  transition: box-shadow 0.2s ease, background 0.2s ease;
 }
 
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
+.auth-form :deep(.el-input__wrapper:hover),
+.auth-form :deep(.el-select__wrapper:hover),
+.auth-form :deep(.el-input__wrapper.is-focus),
+.auth-form :deep(.el-select__wrapper.is-focused) {
+  box-shadow: 0 0 0 1px var(--blue) inset, 0 8px 20px rgba(29, 111, 233, 0.12);
+}
+
+.full-width {
+  width: 100%;
+}
+
+.verify-label {
+  margin: 2px 0 8px;
+  color: #263244;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.drag-verify {
+  position: relative;
+  height: 42px;
+  margin-bottom: 22px;
+  overflow: hidden;
+  border: 1px solid #d8dee8;
+  border-radius: 6px;
+  background: rgba(248, 250, 252, 0.92);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.drag-verify:hover {
+  border-color: rgba(29, 111, 233, 0.52);
+  box-shadow: 0 10px 24px rgba(29, 111, 233, 0.12);
+}
+
+.drag-bg {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0;
+  background: linear-gradient(90deg, var(--blue), var(--cyan));
+}
+
+.drag-text {
+  position: absolute;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
-}
-
-.modal-content {
-  background: white;
-  padding: 40px;
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-  width: 90%;
-  max-width: 400px;
-}
-
-/* 滑动验证码样式 */
-.drag {
-  position: relative;
-  background-color: #f5f5f5;
-  width: 100%;
-  height: 34px;
-  line-height: 34px;
-  text-align: center;
-  border-radius: 8px;
-  overflow: hidden;
-  border: 1px solid #d9d9d9;
-}
-
-.handler {
-  width: 40px;
-  height: 32px;
-  border: 1px solid #ccc;
-  cursor: move;
-  z-index: 2;
-}
-
-.handler_bg {
-  background: #fff url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3hpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNS1jMDIxIDc5LjE1NTc3MiwgMjAxNC8wMS8xMy0xOTo0NDowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo0ZDhlNWY5My05NmI0LTRlNWQtOGFjYi03ZTY4OGYyMTU2ZTYiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6NTEyNTVEMURGMkVFMTFFNEI5NDBCMjQ2M0ExMDQ1OUYiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6NTEyNTVEMUNGMkVFMTFFNEI5NDBCMjQ2M0ExMDQ1OUYiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTQgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDo2MTc5NzNmZS02OTQxLTQyOTYtYTIwNi02NDI2YTNkOWU5YmUiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6NGQ4ZTVmOTMtOTZiNC00ZTVkLThhY2ItN2U2ODhmMjE1NmU2Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+YiRG4AAAALFJREFUeNpi/P//PwMlgImBQkA9A+bOnfsIiBOxKcInh+yCaCDuByoswaIOpxwjciACFegBqZ1AvBSIS5OTk/8TkmNEjwWgQiUgtQuIjwAxUF3yX3xyGIEIFLwHpKyAWB+I1xGSwxULIGf9A7mQkBwTlhBXAFLHgPgqEAcTkmNCU6AL9d8WII4HOvk3ITkWJAXWUMlOoGQHmsE45ViQ2KuBuASoYC4Wf+OUYxz6mQkgwAAN9mIrUReCXgAAAABJRU5ErkJggg==") no-repeat center;
-}
-
-.handler_ok_bg {
-  background: #fff url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAA3hpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNS1jMDIxIDc5LjE1NTc3MiwgMjAxNC8wMS8xMy0xOTo0NDowMCAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wTU09Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9tbS8iIHhtbG5zOnN0UmVmPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvc1R5cGUvUmVzb3VyY2VSZWYjIiB4bWxuczp4bXA9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8iIHhtcE1NOk9yaWdpbmFsRG9jdW1lbnRJRD0ieG1wLmRpZDo0ZDhlNWY5My05NmI0LTRlNWQtOGFjYi03ZTY4OGYyMTU2ZTYiIHhtcE1NOkRvY3VtZW50SUQ9InhtcC5kaWQ6NDlBRDI3NjVGMkQ2MTFFNEI5NDBCMjQ2M0ExMDQ1OUYiIHhtcE1NOkluc3RhbmNlSUQ9InhtcC5paWQ6NDlBRDI3NjRGMkQ2MTFFNEI5NDBCMjQ2M0ExMDQ1OUYiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTQgKE1hY2ludG9zaCkiPiA8eG1wTU06RGVyaXZlZEZyb20gc3RSZWY6aW5zdGFuY2VJRD0ieG1wLmlpZDphNWEzMWNhMC1hYmViLTQxNWEtYTEwZS04Y2U5NzRlN2Q4YTEiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6NGQ4ZTVmOTMtOTZiNC00ZTVkLThhY2ItN2U2ODhmMjE1NmU2Ii8+IDwvcmRmOkRlc2NyaXB0aW9uPiA8L3JkZjpSREY+IDwveDp4bXBtZXRhPiA8P3hwYWNrZXQgZW5kPSJyIj8+k+sHwwAAASZJREFUeNpi/P//PwMyKD8uZw+kUoDYEYgloMIvgHg/EM/ptHx0EFk9I8wAoEZ+IDUPiIMY8IN1QJwENOgj3ACo5gNAbMBAHLgAxA4gQ5igAnNJ0MwAVTsX7IKyY7L2UNuJAf+AmAmJ78AEDTBiwGYg5gbifCSxFCZoaBMCy4A4GOjnH0D6DpK4IxNSVIHAfSDOAeLraJrjgJp/AwPbHMhejiQnwYRmUzNQ4VQgDQqXK0ia/0I17wJiPmQNTNBEAgMlQIWiQA2vgWw7QppBekGxsAjIiEUSBNnsBDWEAY9mEFgMMgBk00E0iZtA7AHEctDQ58MRuA6wlLgGFMoMpIG1QFeGwAIxGZo8GUhIysmwQGSAZgwHaEZhICIzOaBkJkqyM0CAAQDGx279Jf50AAAAAABJRU5ErkJggg==") no-repeat center;
-}
-
-.drag_bg {
-  background-color: #52c41a; /* 匹配Home.vue的绿色 */
-  height: 34px;
-  width: 0px;
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 1;
-}
-
-.drag_text {
-  position: absolute;
-  top: 0px;
-  width: 100%;
-  text-align: center;
-  -moz-user-select: none;
-  -webkit-user-select: none;
+  color: #687386;
+  font-size: 14px;
   user-select: none;
-  -o-user-select: none;
-  -ms-user-select: none;
-  z-index: 0;
-  color: #666;
 }
 
-.login-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none;
-  background: #d9d9d9;
+.drag-verify.verified .drag-text {
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.drag-handler {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  z-index: 2;
+  width: 38px;
+  height: 36px;
+  border: 1px solid #d8dee8;
+  border-radius: 5px;
+  background: #ffffff;
+  color: #1f6feb;
+  font-size: 24px;
+  line-height: 1;
+  cursor: grab;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s ease;
+}
+
+.drag-handler:hover {
+  box-shadow: 0 8px 18px rgba(29, 111, 233, 0.18);
+}
+
+.drag-handler.verified {
+  color: #18a058;
+  cursor: default;
+}
+
+.submit-button {
+  width: 100%;
+  height: 46px;
+  border-radius: 6px;
+  font-weight: 700;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.submit-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 34px rgba(29, 111, 233, 0.24);
+}
+
+.submit-button:deep(.el-button) {
+  width: 100%;
+}
+
+.card-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 20px;
+  color: #687386;
+  font-size: 14px;
+}
+
+:deep(.el-button--primary) {
+  --el-button-bg-color: var(--blue);
+  --el-button-border-color: var(--blue);
+  --el-button-hover-bg-color: #165bd2;
+  --el-button-hover-border-color: #165bd2;
+}
+
+@keyframes pageIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes cardIn {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+@media (max-width: 860px) {
+  .auth-shell {
+    min-height: auto;
+    grid-template-columns: 1fr;
+    gap: 28px;
+    width: min(100% - 32px, 520px);
+    padding: 42px 0 30px;
+  }
+
+  .back-link {
+    margin-bottom: 34px;
+  }
+
+  .brand-copy h1 {
+    font-size: 38px;
+  }
+
+  .brand-copy p {
+    min-height: 86px;
+    font-size: 16px;
+  }
+
+  .auth-card {
+    padding: 24px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-shell,
+  .brand-copy,
+  .auth-card,
+  .caret {
+    animation: none;
+  }
+
+  .auth-card,
+  .back-link,
+  .drag-verify,
+  .drag-handler,
+  .submit-button,
+  .auth-form :deep(.el-input__wrapper),
+  .auth-form :deep(.el-select__wrapper) {
+    transition: none;
+  }
 }
 </style>

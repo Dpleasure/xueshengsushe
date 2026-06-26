@@ -93,6 +93,7 @@ import { ref, onMounted } from 'vue';
 import { repairApi } from '../api/repairApi'; // 假设已创建
 import { accommodationApi } from '../api/accommodationApi';
 import { ElMessage } from 'element-plus';
+import { withApiBaseUrl } from '../api/baseUrl.js';
 
 const myApplications = ref([]);
 const loading = ref(false);
@@ -204,7 +205,7 @@ const getImageUrl = (imagePath) => {
     return imagePath;
   }
   // 如果是相对路径，拼接后端地址
-  return `http://localhost:8080${imagePath}`;
+  return withApiBaseUrl(imagePath);
 };
 </script>
 

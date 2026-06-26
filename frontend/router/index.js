@@ -4,6 +4,11 @@ import Layout from '@/layout/index.vue'
 
 const routes = [
   {
+    path: '/auth',
+    name: 'AuthChoice',
+    component: () => import('@/views/AuthChoice.vue')
+  },
+  {
     path: '/login',
     name: 'Login',
     component: Login
@@ -46,13 +51,13 @@ const routes = [
         path: 'change',
         name: 'Change',
         component: () => import('@/views/Change.vue'),
-        meta: { title: '换寝信息' }
+        meta: { title: '换宿信息' }
       },
       {
         path: 'repair',
         name: 'Repair',
         component: () => import('@/views/Repair.vue'),
-        meta: { title: '寝室报修' }
+        meta: { title: '宿舍报修' }
       },
       {
         path: 'visit',
@@ -76,7 +81,7 @@ const routes = [
         path: 'apply-change',
         name: 'ApplyChange',
         component: () => import('@/views/ApplyChange.vue'),
-        meta: { title: '申请换寝' }
+        meta: { title: '申请换宿' }
       },
       {
         path: 'apply-repair',
@@ -99,23 +104,21 @@ const router = createRouter({
   routes
 })
 
-// 路由守卫
 router.beforeEach((to, from, next) => {
   const token = localStorage.getItem('token')
-  
-  // 白名单：不需要登录就可以访问的页面
-  const whiteList = ['/login', '/register']
-  
-  if (!whiteList.includes(to.path) && !token) {
-    // 未登录且不在白名单中，跳转到登录页
-    next('/login')
-  } else if ((to.path === '/login' || to.path === '/register') && token) {
-    // 已登录访问登录/注册页，跳转到首页
-    next('/')
-  } else {
-    next()
+  const publicPages = ['/auth', '/login', '/register']
+
+  if (!token && !publicPages.includes(to.path)) {
+    next('/auth')
+    return
   }
+
+  if (token && publicPages.includes(to.path)) {
+    next('/home')
+    return
+  }
+
+  next()
 })
 
 export default router
-

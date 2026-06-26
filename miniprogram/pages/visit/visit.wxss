@@ -1,0 +1,17 @@
+.two-columns {
+  display: flex;
+  gap: 20rpx;
+}
+
+.two-columns .field {
+  flex: 1;
+  min-width: 0;
+}
+
+.picker {
+  color: #172033;
+}
+
+.primary-btn {
+  margin-top: 8rpx;
+}

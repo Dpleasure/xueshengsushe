@@ -1,6 +1,11 @@
+const config = require('./config');
+
 App({
   globalData: {
-    baseUrl: 'http://10.31.3.71:8080'
+    lanHosts: config.lanHosts,
+    wanHosts: config.wanHosts,
+    devOnlyHosts: config.devOnlyHosts,
+    baseUrl: [...config.lanHosts, ...config.wanHosts][0]
   },
 
   onLaunch() {

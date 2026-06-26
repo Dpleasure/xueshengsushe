@@ -1,0 +1,33 @@
+<view class="login-page">
+  <image class="page-bg" src="{{useLocalBg ? localFallback : bgUrl}}" mode="aspectFill" binderror="onBgError" />
+  <view class="page-bg-mask"></view>
+
+  <view class="content-layer login-content">
+    <view class="brand-panel">
+      <view class="brand-mark">D</view>
+      <view class="page-title">学生宿舍管理</view>
+      <view class="page-subtitle">移动端学生服务入口</view>
+    </view>
+
+    <view class="card form-card">
+      <view class="card-title">登录账号</view>
+      <view class="field">
+        <view class="label">账号</view>
+        <input class="input" placeholder-class="input-placeholder" placeholder="请输入账号" value="{{form.username}}" data-field="username" bindinput="onInput" />
+      </view>
+
+      <view class="field">
+        <view class="label">密码</view>
+        <input class="input" password placeholder-class="input-placeholder" placeholder="请输入密码" value="{{form.password}}" data-field="password" bindinput="onInput" />
+      </view>
+
+      <view class="field">
+        <view class="label">学号</view>
+        <input class="input" placeholder-class="input-placeholder" placeholder="请输入学号" value="{{form.studentId}}" data-field="studentId" bindinput="onInput" />
+      </view>
+
+      <button class="primary-btn submit-btn" loading="{{submitting}}" bindtap="handleLogin">登录</button>
+      <view class="login-note">请确认后端服务已启动，真机调试时手机需要能访问后端地址。</view>
+    </view>
+  </view>
+</view>

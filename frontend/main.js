@@ -5,10 +5,11 @@ import './assets/styles/common.css'
 import axios from "axios";
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
+import { API_BASE_URL } from './api/baseUrl'
 
 const app = createApp(App)
-axios.defaults.baseURL='http://localhost:8080'
+axios.defaults.baseURL = API_BASE_URL
 
 app.use(router)
+app.use(ElementPlus)
 app.mount('#app')
-

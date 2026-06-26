@@ -1,32 +1,3 @@
-.card-title,
-.list-title {
-  margin-bottom: 20rpx;
-  font-size: 30rpx;
-  font-weight: 700;
-  color: #ffffff;
-}
-
-.field {
-  margin-bottom: 24rpx;
-}
-
-.list-head {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20rpx;
-  margin-bottom: 10rpx;
-}
-
-.item-title {
-  flex: 1;
-  font-size: 30rpx;
-  font-weight: 700;
-  color: #ffffff;
-}
-
-.time {
-  margin-top: 16rpx;
-  font-size: 24rpx;
-  color: rgba(235, 244, 255, 0.48);
+.primary-btn {
+  margin-top: 8rpx;
 }

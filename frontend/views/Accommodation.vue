@@ -219,6 +219,7 @@ import { accommodations, dormitories, students, loadData } from '../store/index.
 import { accommodationApi } from '../api/accommodationApi.js'
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
+import { withApiBaseUrl } from '../api/baseUrl.js'
 
 const searchName = ref('')
 const searchDormitory = ref('')
@@ -344,7 +345,7 @@ const confirmChangeRoom = async () => {
     submitting.value = true
     const token = localStorage.getItem('token')
     const response = await axios.post(
-      'http://localhost:8080/room-changes/change-room',
+      withApiBaseUrl('/room-changes/change-room'),
       {
         accommodationId: currentStudent.value.id,
         newDormitory: newDormitory.value.trim(),

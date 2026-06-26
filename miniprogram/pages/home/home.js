@@ -1,14 +1,15 @@
 const api = require('../../utils/api');
+const { loadAvatarUrl } = require('../../utils/avatar');
 const { localFallback, pageBackground } = require('../../utils/backgrounds');
 
 const displayValue = (value) => (value === undefined || value === null || value === '' ? '-' : value);
 const displayBed = (value) => {
   const text = displayValue(value);
-  if (text === '-' || text.includes('床')) return text;
-  return `${text}号床`;
+  if (text === '-' || text.includes('\u5e8a')) return text;
+  return `${text}\u53f7\u5e8a`;
 };
 const avatarInitial = (value) => {
-  const text = value || '同学';
+  const text = value || '\u540c\u5b66';
   return text.substring(0, 1);
 };
 
@@ -20,10 +21,10 @@ Page({
     userInfo: {},
     accommodation: null,
     accommodationDisplay: null,
-    displayName: '同学',
+    displayName: '\u540c\u5b66',
     displayStudentId: '-',
     avatarUrl: '',
-    avatarText: '同'
+    avatarText: '\u540c'
   },
 
   onBgError() {
@@ -33,14 +34,20 @@ Page({
   onShow() {
     if (!getApp().requireLogin()) return;
     const userInfo = wx.getStorageSync('userInfo') || {};
+    const displayName = userInfo.name || userInfo.username || '\u540c\u5b66';
     this.setData({
       userInfo,
-      displayName: userInfo.name || userInfo.username || '同学',
+      displayName,
       displayStudentId: displayValue(userInfo.studentId),
-      avatarUrl: this.normalizeAvatar(userInfo.avatar),
-      avatarText: avatarInitial(userInfo.name || userInfo.username || '同学')
+      avatarText: avatarInitial(displayName)
     });
+    this.refreshAvatar(userInfo.avatar);
     this.fetchAccommodation(userInfo.studentId);
+  },
+
+  async refreshAvatar(avatar) {
+    const avatarUrl = await loadAvatarUrl(avatar);
+    this.setData({ avatarUrl });
   },
 
   async fetchAccommodation(studentId) {
@@ -63,11 +70,5 @@ Page({
 
   goTab(event) {
     wx.switchTab({ url: event.currentTarget.dataset.url });
-  },
-
-  normalizeAvatar(avatar) {
-    if (!avatar || avatar === '👤') return '';
-    if (/^https?:\/\//i.test(avatar) || avatar.startsWith('data:')) return avatar;
-    return `${getApp().globalData.baseUrl}${avatar}`;
   }
 });
