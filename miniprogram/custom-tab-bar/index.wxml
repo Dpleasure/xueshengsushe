@@ -1,0 +1,19 @@
+<view class="tab-shell">
+  <view class="tab-bar">
+    <view
+      wx:for="{{tabs}}"
+      wx:key="pagePath"
+      class="tab-item {{selected === index ? 'active' : ''}} {{pressed === index ? 'pressed' : ''}}"
+      data-index="{{index}}"
+      bindtap="switchTab"
+      bindtouchstart="onPress"
+      bindtouchend="clearPress"
+      bindtouchcancel="clearPress"
+    >
+      <view class="icon-wrap">
+        <view class="tab-icon {{item.icon}}"></view>
+      </view>
+      <view class="tab-text">{{item.text}}</view>
+    </view>
+  </view>
+</view>
