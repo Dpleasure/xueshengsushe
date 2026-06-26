@@ -79,11 +79,14 @@ public class AuthService {
         
         result.put("success", true);
         result.put("message", "登录成功");
+        result.put("id", user.getId());
         result.put("token", token);
         result.put("username", user.getUsername());
         result.put("name", user.getName());
         result.put("role", user.getRole().name());
         result.put("studentId", user.getStudentId()); // 添加学号/工号
+        result.put("phone", user.getPhone());
+        result.put("email", user.getEmail());
         result.put("avatar", user.getAvatar());
         
         return result;

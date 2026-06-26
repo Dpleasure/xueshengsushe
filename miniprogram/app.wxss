@@ -10,7 +10,7 @@ page {
 .login-page {
   position: relative;
   min-height: 100vh;
-  padding: 32rpx 28rpx 44rpx;
+  padding: 32rpx 28rpx 150rpx;
   box-sizing: border-box;
   overflow-x: hidden;
 }

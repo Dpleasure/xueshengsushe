@@ -6,6 +6,7 @@ import com.dormitory.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -32,6 +33,17 @@ public class UserController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @GetMapping("/me")
+    public RestBean<Map<String, Object>> getCurrentUser(Authentication authentication) {
+        if (authentication == null || authentication.getName() == null) {
+            return RestBean.failure(401, null);
+        }
+
+        return userRepository.findByUsername(authentication.getName())
+                .map(user -> RestBean.success(toProfileData(user)))
+                .orElse(RestBean.failure(404, null));
+    }
 
     @PostMapping("/avatar")
     public RestBean<Map<String, Object>> uploadAvatar(@RequestParam("avatar") MultipartFile avatar,
@@ -70,16 +82,23 @@ public class UserController {
             user.setAvatar(avatarUrl);
             userRepository.save(user);
 
-            Map<String, Object> data = new HashMap<>();
-            data.put("avatar", avatarUrl);
-            data.put("username", user.getUsername());
-            data.put("name", user.getName());
-            data.put("role", user.getRole().name());
-            data.put("studentId", user.getStudentId());
-            return RestBean.success(data);
+            return RestBean.success(toProfileData(user));
         } catch (IOException e) {
             return RestBean.failure(500, null);
         }
+    }
+
+    private Map<String, Object> toProfileData(User user) {
+        Map<String, Object> data = new HashMap<>();
+        data.put("id", user.getId());
+        data.put("username", user.getUsername());
+        data.put("name", user.getName());
+        data.put("role", user.getRole().name());
+        data.put("studentId", user.getStudentId());
+        data.put("phone", user.getPhone());
+        data.put("email", user.getEmail());
+        data.put("avatar", user.getAvatar());
+        return data;
     }
 
     private String getExtension(String originalFilename, String contentType) {

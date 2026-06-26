@@ -41,7 +41,9 @@ api.interceptors.response.use(
       const errorMessage = typeof response.data.message === 'string'
         ? response.data.message
         : '请求失败'
-      alert(errorMessage)
+      if (!response.config?.silent) {
+        alert(errorMessage)
+      }
       return Promise.reject(new Error(errorMessage))
     }
   },
@@ -53,6 +55,9 @@ api.interceptors.response.use(
 
       // 如果后端返回了明确的 message（比如 409 冲突），优先展示它
       if (typeof errorData === 'object' && typeof errorData.message === 'string' && errorData.message.trim()) {
+        if (error.config?.silent) {
+          return Promise.reject(error)
+        }
         alert(errorData.message)
         return Promise.reject(error)
       }
@@ -77,11 +82,17 @@ api.interceptors.response.use(
         default:
           message = '请求失败'
       }
-      alert(message)
+      if (!error.config?.silent) {
+        alert(message)
+      }
     } else if (error.request) {
-      alert('网络错误，请检查网络连接')
+      if (!error.config?.silent) {
+        alert('网络错误，请检查网络连接')
+      }
     } else {
-      alert('请求失败：' + error.message)
+      if (!error.config?.silent) {
+        alert('请求失败：' + error.message)
+      }
     }
     return Promise.reject(error)
   }

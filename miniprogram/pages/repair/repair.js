@@ -1,6 +1,7 @@
 const api = require('../../utils/api');
 const { formatDateTime, repairStatusText, repairStatusClass } = require('../../utils/format');
 const { localFallback, pageBackground } = require('../../utils/backgrounds');
+const { setTabBarSelected } = require('../../utils/tabbar');
 
 const displayValue = (value) => (value === undefined || value === null || value === '' ? '-' : value);
 
@@ -25,6 +26,7 @@ Page({
 
   onShow() {
     if (!getApp().requireLogin()) return;
+    setTabBarSelected(this, 1);
     const userInfo = wx.getStorageSync('userInfo') || {};
     this.setData({ userInfo });
     this.fetchData();

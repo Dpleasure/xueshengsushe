@@ -1,6 +1,7 @@
 const api = require('../../utils/api');
 const { loadAvatarUrl } = require('../../utils/avatar');
 const { localFallback, pageBackground } = require('../../utils/backgrounds');
+const { setTabBarSelected } = require('../../utils/tabbar');
 
 const displayValue = (value) => (value === undefined || value === null || value === '' ? '-' : value);
 const displayBed = (value) => {
@@ -31,6 +32,7 @@ Page({
 
   onShow() {
     if (!getApp().requireLogin()) return;
+    setTabBarSelected(this, 4);
     const userInfo = wx.getStorageSync('userInfo') || {};
     const name = userInfo.name || userInfo.username || '\u5b66\u751f';
     this.setData({

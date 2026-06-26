@@ -17,11 +17,16 @@ const defaultError=(err)=> {
   ElMessage.error(errorMessage)
 }
 const defaultFailure=(message)=>ElMessage.warning(message)
+const authHeaders = (headers = {}) => {
+  const token = localStorage.getItem('token')
+  return token ? { ...headers, Authorization: `Bearer ${token}` } : headers
+}
+
 function post(url, data,success,failure=defaultFailure,error=defaultError) {
   axios.post(withApiBaseUrl(url), data,{
-      headers:{
+      headers: authHeaders({
           'Content-Type': 'application/json'
-      }
+      })
   }).then(({data})=> {
       if (data.success)
           success(data.message,data.status);
@@ -32,6 +37,7 @@ function post(url, data,success,failure=defaultFailure,error=defaultError) {
 }
 function get(url, success,failure=defaultFailure,error=defaultError) {
     axios.get(withApiBaseUrl(url),{
+      headers: authHeaders()
     }).then(({data})=> {
         if (data.success)
             success(data.message,data.status);

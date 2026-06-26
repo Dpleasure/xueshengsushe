@@ -272,10 +272,14 @@ const handleLogin = async () => {
       localStorage.setItem(
         'userInfo',
         JSON.stringify({
+          id: responseData.id,
           username: responseData.username,
           name: responseData.name,
           role: responseData.role,
-          studentId: responseData.studentId
+          studentId: responseData.studentId,
+          phone: responseData.phone,
+          email: responseData.email,
+          avatar: responseData.avatar
         })
       )
       ElMessage.success(responseData.message || '登录成功')

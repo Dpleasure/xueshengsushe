@@ -18,11 +18,12 @@
     </div>
 
     <div class="content-body">
-      <table class="table">
+      <table class="table admin-table">
         <thead>
           <tr>
-            <th><input type="checkbox" class="checkbox" @change="toggleSelectAll"></th>
+            <th class="select-cell"><input type="checkbox" class="checkbox" @change="toggleSelectAll"></th>
             <th>序号</th>
+            <th class="avatar-cell">头像</th>
             <th>用户名</th>
             <th>姓名</th>
             <th>工号</th>
@@ -34,16 +35,27 @@
         </thead>
         <tbody>
           <tr v-for="(item, index) in filteredUsers" :key="item.id">
-            <td><input type="checkbox" class="checkbox" :value="item.id" v-model="selectedIds"></td>
+            <td class="select-cell"><input type="checkbox" class="checkbox" :value="item.id" v-model="selectedIds"></td>
             <td>{{ index + 1 }}</td>
-            <td>{{ item.username }}</td>
-            <td>{{ item.name }}</td>
-            <td>{{ item.studentId }}</td>
+            <td class="avatar-cell">
+              <div class="admin-avatar">
+                <img
+                  v-if="avatarVisible(item)"
+                  :src="normalizeAvatar(item.avatar || item.avatarUrl)"
+                  alt="管理员头像"
+                  @error="markAvatarFailed(item)"
+                >
+                <span v-else>{{ avatarFallback(item) }}</span>
+              </div>
+            </td>
+            <td>{{ item.username || '-' }}</td>
+            <td>{{ item.name || '-' }}</td>
+            <td>{{ item.studentId || '-' }}</td>
             <td>
               <span class="badge" :class="item.role === 'ADMIN' ? 'badge-danger' : 'badge-success'">{{ item.role === 'ADMIN' ? '管理员' : '学生' }}</span>
             </td>
-            <td>{{ item.phone }}</td>
-            <td>{{ item.email }}</td>
+            <td>{{ item.phone || '-' }}</td>
+            <td>{{ item.email || '-' }}</td>
             <td>
               <div class="table-actions">
                 <button class="btn-link" @click="handleEdit(item)">编辑</button>
@@ -111,21 +123,23 @@ import { ref, computed } from 'vue'
 import { admins, loadData } from '../store/index.js'
 import { adminApi } from '../api/adminApi.js'
 import { ElMessage } from 'element-plus'
+import { avatarFallback as getAvatarFallback, avatarKey, normalizeAvatar } from '../utils/avatar.js'
 
 const searchKeyword = ref('')
 const showModal = ref(false)
 const modalType = ref('add')
 const currentItem = ref({})
 const selectedIds = ref([])
+const failedAvatars = ref(new Set())
 
 // 只显示管理员数据
 const filteredUsers = computed(() => {
   let users = admins.value;
   if (searchKeyword.value) {
     users = users.filter(user => 
-      user.username.includes(searchKeyword.value) || 
-      user.name.includes(searchKeyword.value) ||
-      (user.studentId && user.studentId.includes(searchKeyword.value))
+      String(user.username || '').includes(searchKeyword.value) ||
+      String(user.name || '').includes(searchKeyword.value) ||
+      String(user.studentId || '').includes(searchKeyword.value)
     );
   }
   return users;
@@ -133,6 +147,19 @@ const filteredUsers = computed(() => {
 
 const handleSearch = () => {};
 const handleReset = () => { searchKeyword.value = '' };
+
+function avatarVisible(user) {
+  const url = normalizeAvatar(user?.avatar || user?.avatarUrl)
+  return Boolean(url && !failedAvatars.value.has(avatarKey(user)))
+}
+
+function markAvatarFailed(user) {
+  failedAvatars.value = new Set([...failedAvatars.value, avatarKey(user)])
+}
+
+function avatarFallback(user) {
+  return getAvatarFallback(user, '管')
+}
 
 const handleAdd = () => {
   modalType.value = 'add';
@@ -215,3 +242,36 @@ const toggleSelectAll = (e) => {
 };
 </script>
 
+<style scoped>
+.admin-table {
+  table-layout: fixed;
+}
+
+.select-cell {
+  width: 48px;
+}
+
+.avatar-cell {
+  width: 86px;
+}
+
+.admin-avatar {
+  width: 38px;
+  height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  color: #fff;
+  background: linear-gradient(135deg, #4f7cff, #7c5cff);
+  border-radius: 999px;
+  font-weight: 800;
+  box-shadow: 0 8px 16px rgba(79, 124, 255, 0.18);
+}
+
+.admin-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+</style>
