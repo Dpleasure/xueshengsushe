@@ -17,6 +17,11 @@
           <span>系统首页</span>
         </router-link>
 
+        <router-link to="/ai-assistant" class="menu-item" active-class="active">
+          <el-icon><ChatDotRound /></el-icon>
+          <span>智能助手</span>
+        </router-link>
+
         <template v-if="isAdmin">
           <div class="menu-group">
             <button class="menu-group-title" type="button" @click="toggleGroup('info')">
@@ -133,6 +138,7 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import {
   ArrowRight,
+  ChatDotRound,
   DataBoard,
   Files,
   House,

@@ -72,6 +72,12 @@ const routes = [
         meta: { title: '来访登记' }
       },
       {
+        path: 'ai-assistant',
+        name: 'AiAssistant',
+        component: () => import('@/views/AiAssistant.vue'),
+        meta: { title: '智能助手' }
+      },
+      {
         path: 'admin',
         name: 'Admin',
         component: () => import('@/views/Admin.vue'),
