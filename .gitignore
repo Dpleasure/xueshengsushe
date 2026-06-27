@@ -1,5 +1,20 @@
+# Dependencies
+node_modules/
+frontend/node_modules/
+
+# Frontend build and cache
+dist/
+dist-ssr/
+.vite/
+frontend/dist/
+frontend/.vite/
+
+# Backend build
+target/
+backend/target/
+
 # Logs
-logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -7,29 +22,28 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
-dist
-dist-ssr
-.vite
-target
+# Local environment files
+.env
+.env.*
+!.env.example
+!backend/.env.example
 *.local
 
-# Build outputs
-backend/target/
-frontend/dist/
-
-# Runtime uploads
+# Runtime uploads and generated files
 uploads/
 backend/uploads/
 
-# Editor directories and files
+# IDE and editor files
+.idea/
 .vscode/*
 !.vscode/extensions.json
-.idea
 *.iml
-.DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# OS files
+.DS_Store
+Thumbs.db

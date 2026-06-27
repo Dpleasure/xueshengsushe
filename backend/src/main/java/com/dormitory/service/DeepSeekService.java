@@ -12,14 +12,17 @@ import org.springframework.web.client.RestClient;
 import org.springframework.web.client.RestClientResponseException;
 
 import java.time.Duration;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 @Service
 public class DeepSeekService {
     private static final String SYSTEM_PROMPT = """
-            你是学生宿舍管理系统的智能助手。只回答宿舍管理、入住信息、报修、来访登记、换宿申请、个人资料和系统使用相关问题。
-            如果用户询问无关内容，请礼貌说明只能协助宿舍管理系统相关事项。回答要简洁、清晰、可操作。
+            你是学生宿舍管理系统的智能助手。
+            只回答宿舍管理、入住信息、报修、来访登记、换宿申请、个人资料和系统使用相关问题。
+            如果用户询问无关内容，请礼貌说明只能协助宿舍管理系统相关事项。
+            回答要简洁、清晰、可操作。
             不要声称你可以直接读取数据库或替用户提交申请；需要操作时，引导用户到系统对应页面完成。
             """;
 
@@ -44,19 +47,18 @@ public class DeepSeekService {
 
     public Map<String, String> chat(String message) {
         if (!StringUtils.hasText(properties.getApiKey())) {
-            throw new DeepSeekException("DeepSeek API Key 未配置，请先设置环境变量 DEEPSEEK_API_KEY。");
+            throw new DeepSeekException("DeepSeek API Key 未配置，请设置环境变量 DEEPSEEK_API_KEY，或在 backend/.env.local 中配置。");
         }
 
-        Map<String, Object> requestBody = Map.of(
-                "model", properties.getModel(),
-                "messages", List.of(
-                        Map.of("role", "system", "content", SYSTEM_PROMPT),
-                        Map.of("role", "user", "content", message)
-                ),
-                "thinking", Map.of("type", "disabled"),
-                "temperature", 0.3,
-                "max_tokens", 1000
-        );
+        Map<String, Object> requestBody = new LinkedHashMap<>();
+        requestBody.put("model", properties.getModel());
+        requestBody.put("messages", List.of(
+                Map.of("role", "system", "content", SYSTEM_PROMPT),
+                Map.of("role", "user", "content", message)
+        ));
+        requestBody.put("thinking", Map.of("type", "disabled"));
+        requestBody.put("temperature", 0.3);
+        requestBody.put("max_tokens", 1000);
 
         try {
             String responseBody = restClient.post()

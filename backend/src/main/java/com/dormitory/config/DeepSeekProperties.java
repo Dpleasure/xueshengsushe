@@ -59,6 +59,9 @@ public class DeepSeekProperties {
                 if (trimmed.startsWith("DEEPSEEK_API_KEY=")) {
                     return trimmed.substring("DEEPSEEK_API_KEY=".length()).trim();
                 }
+                if (trimmed.startsWith("deepseek.api-key=")) {
+                    return trimmed.substring("deepseek.api-key=".length()).trim();
+                }
             }
         } catch (IOException ignored) {
             return "";

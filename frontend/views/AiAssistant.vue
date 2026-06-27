@@ -5,9 +5,9 @@
         <div>
           <span class="eyebrow">DeepSeek Assistant</span>
           <h1>智能助手</h1>
-          <p>咨询宿舍入住、报修、来访登记、换宿申请和系统使用问题。</p>
+          <p>咨询入住、报修、来访登记、换宿申请和系统使用问题。</p>
         </div>
-        <el-tag effect="plain" type="success">已接入后端代理</el-tag>
+        <el-tag effect="plain" type="success">后端代理</el-tag>
       </header>
 
       <div ref="messageListRef" class="message-list">
@@ -26,7 +26,7 @@
 
         <article v-if="loading" class="message-row assistant">
           <div class="message-avatar">AI</div>
-          <div class="message-bubble typing">
+          <div class="message-bubble typing" aria-label="正在回复">
             <span></span>
             <span></span>
             <span></span>
