@@ -126,13 +126,7 @@ public class RoomChangeService {
         return roomChangeRepository.save(roomChange);
     }
 
-    /**
-     * 单个学生换寝
-     * @param accommodationId 住宿信息ID
-     * @param newDormitory 新寝室号
-     * @param newBed 新床位号
-     * @return 换寝记录
-     */
+
     @Transactional
     public RoomChange approveChange(Long changeId) {
         // 1. 查找换寝申请记录

@@ -21,7 +21,7 @@
       <table class="table">
         <thead>
           <tr>
-            <th><input type="checkbox" class="checkbox" @change="toggleSelectAll"></th>
+            <th><input type="checkbox" class="checkbox" :checked="isCurrentPageAllSelected" :disabled="pagedBuildings.length === 0" @change="toggleSelectAll"></th>
             <th>序号</th>
             <th>名称</th>
             <th>位置</th>
@@ -30,9 +30,9 @@
           </tr>
         </thead>
         <tbody v-if="!loading">
-          <tr v-for="(item, index) in filteredBuildings" :key="item.id">
+          <tr v-for="(item, index) in pagedBuildings" :key="item.id">
             <td><input type="checkbox" class="checkbox" :value="item.id" v-model="selectedIds"></td>
-            <td>{{ index + 1 }}</td>
+            <td>{{ pageStartIndex + index + 1 }}</td>
             <td>{{ item.name }}</td>
             <td>{{ item.location }}</td>
             <td>{{ item.capacity }}</td>
@@ -57,8 +57,21 @@
       </table>
 
       <div class="pagination">
-        <span>共 {{ filteredBuildings.length }} 条</span>
-        <div class="pagination-item active">1</div>
+        <span>共 {{ filteredBuildings.length }} 条，每页 {{ pageSize }} 条</span>
+        <div class="pagination-pages">
+          <button type="button" class="pagination-item" :disabled="currentPage === 1" @click="goToPage(currentPage - 1)">上一页</button>
+          <button
+            v-for="page in totalPages"
+            :key="page"
+            type="button"
+            class="pagination-item"
+            :class="{ active: page === currentPage }"
+            @click="goToPage(page)"
+          >
+            {{ page }}
+          </button>
+          <button type="button" class="pagination-item" :disabled="currentPage === totalPages" @click="goToPage(currentPage + 1)">下一页</button>
+        </div>
       </div>
     </div>
 
@@ -97,9 +110,10 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { buildings } from '../store/index.js'
 import { buildingApi } from '../api/buildingApi.js'
+import { usePagination } from '../utils/pagination.js'
 
 const searchKeyword = ref('')
 const showModal = ref(false)
@@ -127,12 +141,30 @@ const filteredBuildings = computed(() => {
   )
 })
 
+const {
+  currentPage,
+  pageSize,
+  totalPages,
+  pageStartIndex,
+  pagedItems: pagedBuildings,
+  goToPage,
+  resetPage
+} = usePagination(filteredBuildings, 10)
+
+const isCurrentPageAllSelected = computed(() => {
+  return pagedBuildings.value.length > 0 && pagedBuildings.value.every(b => selectedIds.value.includes(b.id))
+})
+
+watch(searchKeyword, resetPage)
+
 const handleSearch = () => {
   // 搜索已通过计算属性实现
+  resetPage()
 }
 
 const handleReset = () => {
   searchKeyword.value = ''
+  resetPage()
 }
 
 const handleAdd = () => {
@@ -210,9 +242,10 @@ const handleSave = async () => {
 
 const toggleSelectAll = (e) => {
   if (e.target.checked) {
-    selectedIds.value = filteredBuildings.value.map(b => b.id)
+    selectedIds.value = Array.from(new Set([...selectedIds.value, ...pagedBuildings.value.map(b => b.id)]))
   } else {
-    selectedIds.value = []
+    const currentPageIds = new Set(pagedBuildings.value.map(b => b.id))
+    selectedIds.value = selectedIds.value.filter(id => !currentPageIds.has(id))
   }
 }
 </script>

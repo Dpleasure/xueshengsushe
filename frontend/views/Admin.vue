@@ -21,7 +21,15 @@
       <table class="table admin-table">
         <thead>
           <tr>
-            <th class="select-cell"><input type="checkbox" class="checkbox" @change="toggleSelectAll"></th>
+            <th class="select-cell">
+              <input
+                type="checkbox"
+                class="checkbox"
+                :checked="isCurrentPageAllSelected"
+                :disabled="pagedUsers.length === 0"
+                @change="toggleSelectAll"
+              >
+            </th>
             <th>序号</th>
             <th class="avatar-cell">头像</th>
             <th>用户名</th>
@@ -34,9 +42,9 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(item, index) in filteredUsers" :key="item.id">
+          <tr v-for="(item, index) in pagedUsers" :key="item.id">
             <td class="select-cell"><input type="checkbox" class="checkbox" :value="item.id" v-model="selectedIds"></td>
-            <td>{{ index + 1 }}</td>
+            <td>{{ pageStartIndex + index + 1 }}</td>
             <td class="avatar-cell">
               <div class="admin-avatar">
                 <img
@@ -63,12 +71,44 @@
               </div>
             </td>
           </tr>
+          <tr v-if="pagedUsers.length === 0">
+            <td colspan="10" class="empty-cell">暂无管理员数据</td>
+          </tr>
         </tbody>
       </table>
 
       <div class="pagination">
-        <span>共 {{ filteredUsers.length }} 条</span>
-        <div class="pagination-item active">1</div>
+        <span>
+          共 {{ filteredUsers.length }} 条，每页 {{ pageSize }} 条
+        </span>
+        <div class="pagination-pages">
+          <button
+            type="button"
+            class="pagination-item"
+            :disabled="currentPage === 1"
+            @click="goToPage(currentPage - 1)"
+          >
+            上一页
+          </button>
+          <button
+            v-for="page in totalPages"
+            :key="page"
+            type="button"
+            class="pagination-item"
+            :class="{ active: page === currentPage }"
+            @click="goToPage(page)"
+          >
+            {{ page }}
+          </button>
+          <button
+            type="button"
+            class="pagination-item"
+            :disabled="currentPage === totalPages"
+            @click="goToPage(currentPage + 1)"
+          >
+            下一页
+          </button>
+        </div>
       </div>
     </div>
 
@@ -119,7 +159,7 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { admins, loadData } from '../store/index.js'
 import { adminApi } from '../api/adminApi.js'
 import { ElMessage } from 'element-plus'
@@ -131,6 +171,8 @@ const modalType = ref('add')
 const currentItem = ref({})
 const selectedIds = ref([])
 const failedAvatars = ref(new Set())
+const currentPage = ref(1)
+const pageSize = 10
 
 // 只显示管理员数据
 const filteredUsers = computed(() => {
@@ -145,8 +187,36 @@ const filteredUsers = computed(() => {
   return users;
 });
 
-const handleSearch = () => {};
-const handleReset = () => { searchKeyword.value = '' };
+const totalPages = computed(() => Math.max(1, Math.ceil(filteredUsers.value.length / pageSize)))
+const pageStartIndex = computed(() => (currentPage.value - 1) * pageSize)
+const pagedUsers = computed(() => {
+  return filteredUsers.value.slice(pageStartIndex.value, pageStartIndex.value + pageSize)
+})
+const isCurrentPageAllSelected = computed(() => {
+  return pagedUsers.value.length > 0 && pagedUsers.value.every(user => selectedIds.value.includes(user.id))
+})
+
+watch(searchKeyword, () => {
+  currentPage.value = 1
+})
+
+watch(totalPages, (pages) => {
+  if (currentPage.value > pages) {
+    currentPage.value = pages
+  }
+})
+
+const goToPage = (page) => {
+  currentPage.value = Math.min(Math.max(page, 1), totalPages.value)
+}
+
+const handleSearch = () => {
+  goToPage(1)
+};
+const handleReset = () => {
+  searchKeyword.value = ''
+  goToPage(1)
+};
 
 function avatarVisible(user) {
   const url = normalizeAvatar(user?.avatar || user?.avatarUrl)
@@ -235,9 +305,10 @@ const handleSave = async () => {
 
 const toggleSelectAll = (e) => {
   if (e.target.checked) {
-    selectedIds.value = filteredUsers.value.map(u => u.id);
+    selectedIds.value = Array.from(new Set([...selectedIds.value, ...pagedUsers.value.map(u => u.id)]));
   } else {
-    selectedIds.value = [];
+    const currentPageIds = new Set(pagedUsers.value.map(u => u.id));
+    selectedIds.value = selectedIds.value.filter(id => !currentPageIds.has(id));
   }
 };
 </script>
@@ -273,5 +344,40 @@ const toggleSelectAll = (e) => {
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+.empty-cell {
+  padding: 32px 16px;
+  color: #98a2b3;
+  text-align: center;
+}
+
+.pagination-pages {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.pagination-item {
+  background: #fff;
+}
+
+.pagination-item:disabled {
+  color: #98a2b3;
+  cursor: not-allowed;
+  background: #f8fafc;
+}
+
+@media (max-width: 640px) {
+  .pagination {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .pagination-pages {
+    justify-content: flex-start;
+  }
 }
 </style>

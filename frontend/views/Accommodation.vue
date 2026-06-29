@@ -26,7 +26,7 @@
       <table class="table">
         <thead>
           <tr>
-            <th><input type="checkbox" class="checkbox" @change="toggleSelectAll"></th>
+            <th><input type="checkbox" class="checkbox" :checked="isCurrentPageAllSelected" :disabled="pagedAccommodations.length === 0" @change="toggleSelectAll"></th>
             <th>序号</th>
             <th>学生姓名</th>
             <th>学号</th>
@@ -37,9 +37,9 @@
           </tr>
         </thead>
         <tbody v-if="!loading">
-          <tr v-for="(item, index) in filteredAccommodations" :key="item.id">
+          <tr v-for="(item, index) in pagedAccommodations" :key="item.id">
             <td><input type="checkbox" class="checkbox" :value="item.id" v-model="selectedIds"></td>
-            <td>{{ index + 1 }}</td>
+            <td>{{ pageStartIndex + index + 1 }}</td>
             <td>{{ item.studentName }}</td>
             <td>{{ item.studentId }}</td>
             <td>{{ item.dormitory }}</td>
@@ -66,8 +66,21 @@
       </table>
 
       <div class="pagination">
-        <span>共 {{ filteredAccommodations.length }} 条</span>
-        <div class="pagination-item active">1</div>
+        <span>共 {{ filteredAccommodations.length }} 条，每页 {{ pageSize }} 条</span>
+        <div class="pagination-pages">
+          <button type="button" class="pagination-item" :disabled="currentPage === 1" @click="goToPage(currentPage - 1)">上一页</button>
+          <button
+            v-for="page in totalPages"
+            :key="page"
+            type="button"
+            class="pagination-item"
+            :class="{ active: page === currentPage }"
+            @click="goToPage(page)"
+          >
+            {{ page }}
+          </button>
+          <button type="button" class="pagination-item" :disabled="currentPage === totalPages" @click="goToPage(currentPage + 1)">下一页</button>
+        </div>
       </div>
     </div>
 
@@ -214,12 +227,13 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { accommodations, dormitories, students, loadData } from '../store/index.js'
 import { accommodationApi } from '../api/accommodationApi.js'
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import { withApiBaseUrl } from '../api/baseUrl.js'
+import { usePagination } from '../utils/pagination.js'
 
 const searchName = ref('')
 const searchDormitory = ref('')
@@ -252,6 +266,22 @@ const filteredAccommodations = computed(() => {
     return matchName && matchDormitory
   })
 })
+
+const {
+  currentPage,
+  pageSize,
+  totalPages,
+  pageStartIndex,
+  pagedItems: pagedAccommodations,
+  goToPage,
+  resetPage
+} = usePagination(filteredAccommodations, 10)
+
+const isCurrentPageAllSelected = computed(() => {
+  return pagedAccommodations.value.length > 0 && pagedAccommodations.value.every(a => selectedIds.value.includes(a.id))
+})
+
+watch([searchName, searchDormitory], resetPage)
 
 // 获取唯一的宿舍楼列表
 const uniqueBuildings = computed(() => {
@@ -310,11 +340,12 @@ const availableBeds = computed(() => {
   return allBeds.filter(bed => !occupiedBeds.includes(bed))
 })
 
-const handleSearch = () => {}
+const handleSearch = () => resetPage()
 
 const handleReset = () => {
   searchName.value = ''
   searchDormitory.value = ''
+  resetPage()
 }
 
 const handleChangeRoom = (item) => {
@@ -486,9 +517,10 @@ const confirmAdd = async () => {
 
 const toggleSelectAll = (e) => {
   if (e.target.checked) {
-    selectedIds.value = filteredAccommodations.value.map(a => a.id)
+    selectedIds.value = Array.from(new Set([...selectedIds.value, ...pagedAccommodations.value.map(a => a.id)]))
   } else {
-    selectedIds.value = []
+    const currentPageIds = new Set(pagedAccommodations.value.map(a => a.id))
+    selectedIds.value = selectedIds.value.filter(id => !currentPageIds.has(id))
   }
 }
 </script>

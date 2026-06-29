@@ -154,6 +154,14 @@
   align-items: center;
   padding: 16px 0 0;
   color: #667085;
+  gap: 12px;
+}
+
+.pagination-pages {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
 .pagination-item {
@@ -162,6 +170,7 @@
   border: 1px solid #d7e0ee;
   border-radius: 9px;
   cursor: pointer;
+  background: #fff;
   text-align: center;
 }
 
@@ -169,6 +178,12 @@
   color: white;
   background: #4f7cff;
   border-color: #4f7cff;
+}
+
+.pagination-item:disabled {
+  color: #98a2b3;
+  cursor: not-allowed;
+  background: #f8fafc;
 }
 
 .modal-overlay {
@@ -288,6 +303,15 @@
 }
 
 @media (max-width: 640px) {
+  .pagination {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .pagination-pages {
+    justify-content: flex-start;
+  }
+
   .search-input {
     width: 100%;
   }

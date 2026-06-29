@@ -16,7 +16,7 @@
       <table class="table student-table">
         <thead>
           <tr>
-            <th class="select-cell"><input type="checkbox" class="checkbox" @change="toggleSelectAll"></th>
+            <th class="select-cell"><input type="checkbox" class="checkbox" :checked="isCurrentPageAllSelected" :disabled="pagedStudents.length === 0" @change="toggleSelectAll"></th>
             <th>序号</th>
             <th class="avatar-cell">头像</th>
             <th>用户名</th>
@@ -29,9 +29,9 @@
           </tr>
         </thead>
         <tbody v-if="!loading">
-          <tr v-for="(item, index) in filteredStudents" :key="item.id">
+          <tr v-for="(item, index) in pagedStudents" :key="item.id">
             <td class="select-cell"><input v-model="selectedIds" type="checkbox" class="checkbox" :value="item.id"></td>
-            <td>{{ index + 1 }}</td>
+            <td>{{ pageStartIndex + index + 1 }}</td>
             <td class="avatar-cell">
               <div class="student-avatar">
                 <img
@@ -74,8 +74,21 @@
       </table>
 
       <div class="pagination">
-        <span>共 {{ filteredStudents.length }} 条</span>
-        <div class="pagination-item active">1</div>
+        <span>共 {{ filteredStudents.length }} 条，每页 {{ pageSize }} 条</span>
+        <div class="pagination-pages">
+          <button type="button" class="pagination-item" :disabled="currentPage === 1" @click="goToPage(currentPage - 1)">上一页</button>
+          <button
+            v-for="page in totalPages"
+            :key="page"
+            type="button"
+            class="pagination-item"
+            :class="{ active: page === currentPage }"
+            @click="goToPage(page)"
+          >
+            {{ page }}
+          </button>
+          <button type="button" class="pagination-item" :disabled="currentPage === totalPages" @click="goToPage(currentPage + 1)">下一页</button>
+        </div>
       </div>
     </div>
 
@@ -121,10 +134,11 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { students, accommodations } from '../store/index.js'
 import { studentApi } from '../api/studentApi.js'
 import { avatarFallback as getAvatarFallback, avatarKey, normalizeAvatar } from '../utils/avatar.js'
+import { usePagination } from '../utils/pagination.js'
 
 const searchKeyword = ref('')
 const showModal = ref(false)
@@ -144,8 +158,27 @@ const filteredStudents = computed(() => {
   )
 })
 
-const handleSearch = () => {}
-const handleReset = () => { searchKeyword.value = '' }
+const {
+  currentPage,
+  pageSize,
+  totalPages,
+  pageStartIndex,
+  pagedItems: pagedStudents,
+  goToPage,
+  resetPage
+} = usePagination(filteredStudents, 10)
+
+const isCurrentPageAllSelected = computed(() => {
+  return pagedStudents.value.length > 0 && pagedStudents.value.every(s => selectedIds.value.includes(s.id))
+})
+
+watch(searchKeyword, resetPage)
+
+const handleSearch = () => resetPage()
+const handleReset = () => {
+  searchKeyword.value = ''
+  resetPage()
+}
 
 const getAccommodationStatus = (student) => {
   const studentId = student?.studentId
@@ -251,7 +284,12 @@ const handleSave = async () => {
 }
 
 const toggleSelectAll = (e) => {
-  selectedIds.value = e.target.checked ? filteredStudents.value.map(s => s.id) : []
+  if (e.target.checked) {
+    selectedIds.value = Array.from(new Set([...selectedIds.value, ...pagedStudents.value.map(s => s.id)]))
+  } else {
+    const currentPageIds = new Set(pagedStudents.value.map(s => s.id))
+    selectedIds.value = selectedIds.value.filter(id => !currentPageIds.has(id))
+  }
 }
 </script>
 

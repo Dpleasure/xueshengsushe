@@ -21,7 +21,7 @@
       <table class="table">
         <thead>
           <tr>
-            <th><input type="checkbox" class="checkbox" @change="toggleSelectAll"></th>
+            <th><input type="checkbox" class="checkbox" :checked="isCurrentPageAllSelected" :disabled="pagedDormitories.length === 0" @change="toggleSelectAll"></th>
             <th>序号</th>
             <th>寝室号</th>
             <th>宿舍楼</th>
@@ -31,9 +31,9 @@
           </tr>
         </thead>
         <tbody>
-          <tr v-for="(item, index) in filteredDormitories" :key="item.id">
+          <tr v-for="(item, index) in pagedDormitories" :key="item.id">
             <td><input type="checkbox" class="checkbox" :value="item.id" v-model="selectedIds"></td>
-            <td>{{ index + 1 }}</td>
+            <td>{{ pageStartIndex + index + 1 }}</td>
             <td>{{ item.number }}</td>
             <td>{{ item.building }}</td>
             <td>{{ item.capacity }}</td>
@@ -49,8 +49,21 @@
       </table>
 
       <div class="pagination">
-        <span>共 {{ filteredDormitories.length }} 条</span>
-        <div class="pagination-item active">1</div>
+        <span>共 {{ filteredDormitories.length }} 条，每页 {{ pageSize }} 条</span>
+        <div class="pagination-pages">
+          <button type="button" class="pagination-item" :disabled="currentPage === 1" @click="goToPage(currentPage - 1)">上一页</button>
+          <button
+            v-for="page in totalPages"
+            :key="page"
+            type="button"
+            class="pagination-item"
+            :class="{ active: page === currentPage }"
+            @click="goToPage(page)"
+          >
+            {{ page }}
+          </button>
+          <button type="button" class="pagination-item" :disabled="currentPage === totalPages" @click="goToPage(currentPage + 1)">下一页</button>
+        </div>
       </div>
     </div>
 
@@ -90,9 +103,10 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { dormitories, buildings, addItem, updateItem, deleteItem, batchDeleteItems } from '../store/index.js'
 import { dormitoryApi } from '../api/dormitoryApi.js'
+import { usePagination } from '../utils/pagination.js'
 
 const searchKeyword = ref('')
 const showModal = ref(false)
@@ -108,8 +122,27 @@ const filteredDormitories = computed(() => {
   )
 })
 
-const handleSearch = () => {}
-const handleReset = () => { searchKeyword.value = '' }
+const {
+  currentPage,
+  pageSize,
+  totalPages,
+  pageStartIndex,
+  pagedItems: pagedDormitories,
+  goToPage,
+  resetPage
+} = usePagination(filteredDormitories, 10)
+
+const isCurrentPageAllSelected = computed(() => {
+  return pagedDormitories.value.length > 0 && pagedDormitories.value.every(d => selectedIds.value.includes(d.id))
+})
+
+watch(searchKeyword, resetPage)
+
+const handleSearch = () => resetPage()
+const handleReset = () => {
+  searchKeyword.value = ''
+  resetPage()
+}
 
 const handleAdd = () => {
   modalType.value = 'add'
@@ -215,9 +248,10 @@ const handleSave = () => {
 
 const toggleSelectAll = (e) => {
   if (e.target.checked) {
-    selectedIds.value = filteredDormitories.value.map(d => d.id)
+    selectedIds.value = Array.from(new Set([...selectedIds.value, ...pagedDormitories.value.map(d => d.id)]))
   } else {
-    selectedIds.value = []
+    const currentPageIds = new Set(pagedDormitories.value.map(d => d.id))
+    selectedIds.value = selectedIds.value.filter(id => !currentPageIds.has(id))
   }
 }
 </script>

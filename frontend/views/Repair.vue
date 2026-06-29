@@ -29,8 +29,8 @@
           </tr>
         </thead>
         <tbody v-if="!loading">
-          <tr v-for="(item, index) in filteredRepairs" :key="item.id">
-            <td>{{ index + 1 }}</td>
+          <tr v-for="(item, index) in pagedRepairs" :key="item.id">
+            <td>{{ pageStartIndex + index + 1 }}</td>
             <td>{{ item.reporter }}</td>
             <td>{{ item.studentId }}</td>
             <td>{{ item.dormitory }}</td>
@@ -75,6 +75,24 @@
           </tr>
         </tbody>
       </table>
+
+      <div class="pagination">
+        <span>共 {{ filteredRepairs.length }} 条，每页 {{ pageSize }} 条</span>
+        <div class="pagination-pages">
+          <button type="button" class="pagination-item" :disabled="currentPage === 1" @click="goToPage(currentPage - 1)">上一页</button>
+          <button
+            v-for="page in totalPages"
+            :key="page"
+            type="button"
+            class="pagination-item"
+            :class="{ active: page === currentPage }"
+            @click="goToPage(page)"
+          >
+            {{ page }}
+          </button>
+          <button type="button" class="pagination-item" :disabled="currentPage === totalPages" @click="goToPage(currentPage + 1)">下一页</button>
+        </div>
+      </div>
     </div>
 
     <!-- 状态更改模态框 -->
@@ -115,10 +133,11 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { repairApi } from '../api/repairApi';
 import { ElMessage } from 'element-plus';
 import { withApiBaseUrl } from '../api/baseUrl.js';
+import { usePagination } from '../utils/pagination.js';
 
 const searchKeyword = ref('');
 const repairs = ref([]);
@@ -137,6 +156,18 @@ const filteredRepairs = computed(() => {
     (r.studentId && r.studentId.includes(searchKeyword.value))
   );
 });
+
+const {
+  currentPage,
+  pageSize,
+  totalPages,
+  pageStartIndex,
+  pagedItems: pagedRepairs,
+  goToPage,
+  resetPage
+} = usePagination(filteredRepairs, 10);
+
+watch(searchKeyword, resetPage);
 
 const fetchData = async () => {
   loading.value = true;
@@ -192,9 +223,13 @@ const confirmStatusChange = async () => {
 const handleSearch = () => {
   // The computed property `filteredRepairs` handles filtering automatically.
   // This function can be used if a manual search trigger is preferred.
+  resetPage();
 };
 
-const handleReset = () => { searchKeyword.value = ''; };
+const handleReset = () => {
+  searchKeyword.value = '';
+  resetPage();
+};
 
 const getImageUrl = (imagePath) => {
   if (!imagePath) return '';

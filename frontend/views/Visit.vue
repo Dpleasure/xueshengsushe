@@ -11,7 +11,7 @@
       <table class="table">
         <thead>
           <tr>
-            <th><input type="checkbox" class="checkbox" @change="toggleSelectAll"></th>
+            <th><input type="checkbox" class="checkbox" :checked="isCurrentPageAllSelected" :disabled="pagedVisits.length === 0" @change="toggleSelectAll"></th>
             <th>序号</th>
             <th>申请学生</th>
             <th>学号</th>
@@ -23,9 +23,9 @@
           </tr>
         </thead>
         <tbody v-if="!loading">
-          <tr v-for="(item, index) in visits" :key="item.id">
+          <tr v-for="(item, index) in pagedVisits" :key="item.id">
             <td><input type="checkbox" class="checkbox" :value="item.id" v-model="selectedIds"></td>
-            <td>{{ index + 1 }}</td>
+            <td>{{ pageStartIndex + index + 1 }}</td>
             <td>{{ item.studentName || 'N/A' }}</td> <!-- Assuming studentName is available -->
             <td>{{ item.studentId }}</td>
             <td>{{ item.visitorName }}</td>
@@ -54,18 +54,50 @@
           </tr>
         </tbody>
       </table>
+
+      <div class="pagination">
+        <span>共 {{ visits.length }} 条，每页 {{ pageSize }} 条</span>
+        <div class="pagination-pages">
+          <button type="button" class="pagination-item" :disabled="currentPage === 1" @click="goToPage(currentPage - 1)">上一页</button>
+          <button
+            v-for="page in totalPages"
+            :key="page"
+            type="button"
+            class="pagination-item"
+            :class="{ active: page === currentPage }"
+            @click="goToPage(page)"
+          >
+            {{ page }}
+          </button>
+          <button type="button" class="pagination-item" :disabled="currentPage === totalPages" @click="goToPage(currentPage + 1)">下一页</button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { visitApi } from '../api/visitApi';
 import { ElMessage } from 'element-plus';
+import { usePagination } from '../utils/pagination.js';
 
 const visits = ref([]);
 const loading = ref(false);
 const selectedIds = ref([]);
+
+const {
+  currentPage,
+  pageSize,
+  totalPages,
+  pageStartIndex,
+  pagedItems: pagedVisits,
+  goToPage
+} = usePagination(visits, 10);
+
+const isCurrentPageAllSelected = computed(() => {
+  return pagedVisits.value.length > 0 && pagedVisits.value.every(v => selectedIds.value.includes(v.id));
+});
 
 const fetchData = async () => {
   loading.value = true;
@@ -124,9 +156,10 @@ const handleBatchDelete = async () => {
 
 const toggleSelectAll = (e) => {
   if (e.target.checked) {
-    selectedIds.value = visits.value.map(v => v.id);
+    selectedIds.value = Array.from(new Set([...selectedIds.value, ...pagedVisits.value.map(v => v.id)]));
   } else {
-    selectedIds.value = [];
+    const currentPageIds = new Set(pagedVisits.value.map(v => v.id));
+    selectedIds.value = selectedIds.value.filter(id => !currentPageIds.has(id));
   }
 };
 
